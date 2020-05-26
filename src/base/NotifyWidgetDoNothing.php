@@ -1,6 +1,6 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
@@ -8,7 +8,7 @@
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base;
+namespace open20\amos\notificationmanager\base;
 
 
 class NotifyWidgetDoNothing implements NotifyWidget

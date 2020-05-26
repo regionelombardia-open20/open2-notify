@@ -1,8 +1,7 @@
 <?php
-
-namespace lispa\amos\notificationmanager\listeners;
+namespace open20\amos\notificationmanager\listeners;
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
@@ -10,17 +9,18 @@ namespace lispa\amos\notificationmanager\listeners;
  * @category   CategoryName
  */
 
-use lispa\amos\core\record\Record;
-use lispa\amos\core\user\User;
-use lispa\amos\notificationmanager\base\BuilderFactory;
-use lispa\amos\notificationmanager\models\ChangeStatusEmail;
-use lispa\amos\notificationmanager\record\NotifyRecordInterface;
+use open20\amos\core\record\Record;
+use open20\amos\core\user\User;
+use open20\amos\notificationmanager\base\BuilderFactory;
+use open20\amos\notificationmanager\models\ChangeStatusEmail;
+use open20\amos\notificationmanager\models\NotificationConf;
+use open20\amos\notificationmanager\record\NotifyRecordInterface;
 use ReflectionClass;
 use Yii;
 use yii\base\Exception;
 
 
-class NotifyWorkflowListener extends \yii\base\Object
+class NotifyWorkflowListener extends \yii\base\BaseObject
 {
 
     /**
@@ -48,7 +48,7 @@ class NotifyWorkflowListener extends \yii\base\Object
         }
         catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         return true;
     }
@@ -62,6 +62,7 @@ class NotifyWorkflowListener extends \yii\base\Object
     public function sendValidatorsEmail($event,$model)
     {
         try {
+            $module = \Yii::$app->getModule('notify');
             $rc = new ReflectionClass($model->className());
             if ($rc->hasMethod('getToValidateStatus') && $rc->hasMethod('getValidatedStatus')) {
 
@@ -89,7 +90,7 @@ class NotifyWorkflowListener extends \yii\base\Object
                 }else{
                     if (!strcmp($model->getValidatedStatus(), $event->getEndStatus()->getId())) 
                     {
-                        $validator_id = $model->getStatusLastUpdateUser($model->getValidatedStatus());
+                        $validator_id = \Yii::$app->user->id;//$model->getStatusLastUpdateUser($model->getValidatedStatus());
                         $factory = new BuilderFactory();
                         $builder = $factory->create(BuilderFactory::VALIDATED_MAIL_BUILDER);
                         $to[] = $validator_id;
@@ -104,7 +105,7 @@ class NotifyWorkflowListener extends \yii\base\Object
         }
         catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
     }
@@ -170,7 +171,7 @@ class NotifyWorkflowListener extends \yii\base\Object
 
         } catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
     }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
@@ -8,10 +8,10 @@
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\record;
+namespace open20\amos\notificationmanager\record;
 
 
-use \bedezign\yii2\audit\AuditTrailBehavior;
+use \open20\amos\audit\AuditTrailBehavior;
 use \yii\helpers\ArrayHelper;
 
 class NotifyAuditRecord extends NotifyRecord implements NotifyRecordInterface

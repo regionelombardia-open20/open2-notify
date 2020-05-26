@@ -1,25 +1,25 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notify
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base;
+namespace open20\amos\notificationmanager\base;
 
-use lispa\amos\notificationmanager\base\builder\ContentImmediateMailBuilder;
-use lispa\amos\notificationmanager\base\builder\ContentMailBuilder;
-use lispa\amos\notificationmanager\base\builder\CustomMailBuilder;
-use lispa\amos\notificationmanager\base\builder\ValidatedMailBuilder;
-use lispa\amos\notificationmanager\base\builder\ValidatorsMailBuilder;
-use lispa\amos\notificationmanager\models\ChangeStatusEmail;
-use yii\base\Object;
+use open20\amos\notificationmanager\base\builder\ContentImmediateMailBuilder;
+use open20\amos\notificationmanager\base\builder\ContentMailBuilder;
+use open20\amos\notificationmanager\base\builder\CustomMailBuilder;
+use open20\amos\notificationmanager\base\builder\ValidatedMailBuilder;
+use open20\amos\notificationmanager\base\builder\ValidatorsMailBuilder;
+use open20\amos\notificationmanager\models\ChangeStatusEmail;
+use yii\base\BaseObject;
 
-class BuilderFactory extends Object {
+class BuilderFactory extends BaseObject {
 
     const CONTENT_MAIL_BUILDER = 1;
     const VALIDATORS_MAIL_BUILDER = 2;

@@ -1,22 +1,23 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notify
  * @category   CategoryName
  */
 
 
-namespace  lispa\amos\notificationmanager\models;
+namespace  open20\amos\notificationmanager\models;
 
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 /**
  * This is the model class for table "notificationread".
  *
+ * @author -
  * @property integer $id
  * @property integer $user_id
  * @property integer notification_id

@@ -1,30 +1,33 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notify
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base;
+namespace open20\amos\notificationmanager\base;
 
-use lispa\amos\core\record\Record;
-use lispa\amos\core\user\AmosUser;
-use lispa\amos\notificationmanager\models\Notification;
-use lispa\amos\notificationmanager\models\NotificationChannels;
-use lispa\amos\notificationmanager\models\NotificationsRead;
+use open20\amos\core\record\Record;
+use open20\amos\core\user\AmosUser;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\models\Notification;
+use open20\amos\notificationmanager\models\NotificationChannels;
+use open20\amos\notificationmanager\models\NotificationsRead;
+
 use Yii;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
 use yii\db\Query;
+use yii\log\Logger;
 
 /**
  * Class NotifierRepository
- * @package lispa\amos\notificationmanager\base
+ * @package open20\amos\notificationmanager\base
  */
 class NotifierRepository
 {
@@ -42,20 +45,29 @@ class NotifierRepository
         $classObj = new $class_name;
         try {
             $subquery = new Query();
-            $subquery->distinct()->select('id')->from(['subquery' => $externalquery]);
+            $subquery
+                ->distinct()
+                ->select('id')
+                ->from(['subquery' => $externalquery]);
             
             $query = new Query();
-            $query->distinct()->select('count(*) as number')->from(Notification::tableName() . " a");
-            $query->leftJoin(NotificationsRead::tableName() . " b", "a.id = b.notification_id and b.user_id = " . $uid);
-            $query->leftJoin($classObj->tableName(), "a.content_id = " . $classObj->tableName() . ".id");
-            $query->andWhere(['b.user_id' => null,
-                "a.channels" => NotificationChannels::CHANNEL_READ,
-                "a.class_name" => $class_name,
-                $classObj->tableName() . '.id' => $subquery]);
+            $query
+                ->distinct()
+                ->select('count(*) as number')
+                ->from(Notification::tableName() . ' a')
+                ->leftJoin(NotificationsRead::tableName() . ' b', 'a.id = b.notification_id and b.user_id = ' . $uid)
+                ->leftJoin($classObj->tableName(), 'a.content_id = ' . $classObj->tableName() . '.id')
+                ->andWhere([
+                    'b.user_id' => null,
+                    'a.channels' => NotificationChannels::CHANNEL_READ,
+                    'a.class_name' => $class_name,
+                    $classObj->tableName() . '.id' => $subquery
+                ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
+        
         return $result;
     }
     
@@ -75,16 +87,26 @@ class NotifierRepository
             if ($uid === null) {
                 $userId = Yii::$app->user->identity->profile->id;
             }
+            
             $query = new Query();
-            $query->distinct()->select('count(*) as number')->from(Notification::tableName() . " a");
-            $query->innerJoin(NotificationsRead::tableName() . " b", "a.id = b.notification_id and b.user_id = " . $userId . " and a.content_id = " . $model->id);
-            $query->andWhere(["a.channels" => NotificationChannels::CHANNEL_READ_DETAIL,
-                "a.class_name" => get_class($model)]);
+            $query
+                ->distinct()
+                ->select('count(*) as number')
+                ->from(Notification::tableName() . ' a')
+                ->innerJoin(
+                    NotificationsRead::tableName() . ' b', 
+                    'a.id = b.notification_id and b.user_id = ' . $userId . ' and a.content_id = ' . $model->id
+                )
+                ->andWhere([
+                    'a.channels' => NotificationChannels::CHANNEL_READ_DETAIL,
+                    'a.class_name' => get_class($model)
+                ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
-        return $result > 0 ? TRUE : FALSE;
+        
+        return $result > 0;
     }
     
     /**
@@ -100,19 +122,28 @@ class NotifierRepository
         try {
             $classObj = new $class_name;
             $subquery = new Query();
-            $subquery->distinct()->select('id')->from(['subquery' => $externalquery]);
+            $subquery->distinct()
+                ->select('id')
+                ->from(['subquery' => $externalquery]);
             
             $query = new Query();
-            $query->distinct()->select('a.id as notification_id')->from(Notification::tableName() . " a");
-            $query->leftJoin(NotificationsRead::tableName() . " b", "a.id = b.notification_id and b.user_id = " . $uid);
-            $query->leftJoin($classObj->tableName(), "a.content_id = " . $classObj->tableName() . ".id");
-            $query->andWhere(['b.user_id' => null,
-                "a.channels" => $channel,
-                "a.class_name" => $class_name,
-                $classObj->tableName() . '.id' => $subquery]);
+            $query
+                ->distinct()
+                ->select('a.id as notification_id')
+                ->from(Notification::tableName() . ' a')
+                ->leftJoin(NotificationsRead::tableName() . ' b', 'a.id = b.notification_id and b.user_id = ' . $uid)
+                ->leftJoin($classObj->tableName(), 'a.content_id = ' . $classObj->tableName() . '.id')
+                ->andWhere([
+                    'b.user_id' => null,
+                    'a.channels' => $channel,
+                    'a.class_name' => $class_name,
+                    $classObj->tableName() . '.id' => $subquery
+                ]);
+            
             $result = $query->all();
             foreach ($result as $model) {
-                $read = new NotificationsRead();
+                /** @var NotificationsRead $read */
+                $read = AmosNotify::instance()->createModel('NotificationsRead');
                 $read->user_id = $uid;
                 $read->notification_id = $model['notification_id'];
                 $ok = $read->save();
@@ -121,9 +152,10 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
             $allOk = false;
         }
+        
         return $allOk;
     }
     
@@ -143,18 +175,30 @@ class NotifierRepository
             $subquery->distinct()->select('id')->from(['subquery' => $externalquery]);
             
             $query = new Query();
-            $query->distinct()->select('a.id as notification_id')->from(Notification::tableName() . " a");
-            $query->leftJoin(NotificationsRead::tableName() . " b", "a.id = b.notification_id and b.user_id = " . $uid);
-            $query->leftJoin($classObj->tableName(), "a.content_id = " . $classObj->tableName() . ".id");
-            $query->andWhere([
-                'b.user_id' => $uid,
-                "a.channels" => $channel,
-                "a.class_name" => $class_name,
-                $classObj->tableName() . '.id' => $subquery
-            ]);
+            $query
+                ->distinct()
+                ->select('a.id as notification_id')
+                ->from(Notification::tableName() . ' a')
+                ->leftJoin(
+                    NotificationsRead::tableName() . ' b', 
+                    'a.id = b.notification_id and b.user_id = ' . $uid
+                )
+                ->leftJoin(
+                    $classObj->tableName(), 
+                    'a.content_id = ' . $classObj->tableName() . '.id'
+                )
+                ->andWhere([
+                    'b.user_id' => $uid,
+                    'a.channels' => $channel,
+                    'a.class_name' => $class_name,
+                    $classObj->tableName() . '.id' => $subquery
+                ]);
+            
             $result = $query->all();
             foreach ($result as $model) {
-                $read = NotificationsRead::findOne([
+                /** @var NotificationsRead $notificationsReadModel */
+                $notificationsReadModel = AmosNotify::instance()->createModel('NotificationsRead');
+                $read = $notificationsReadModel::findOne([
                     'user_id' => $uid,
                     'notification_id' => $model['notification_id']
                 ]);
@@ -164,8 +208,9 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
+        
         return $allOk;
     }
     
@@ -179,6 +224,7 @@ class NotifierRepository
     {
         /** @var Record $class_name */
         $externalquery = $class_name::find()->andWhere(['id' => $contentId]);
+        
         return $this->notificationOff($uid, $class_name, $externalquery, NotificationChannels::CHANNEL_FAVOURITES);
     }
     
@@ -192,6 +238,7 @@ class NotifierRepository
     {
         /** @var Record $class_name */
         $externalquery = $class_name::find()->andWhere(['id' => $contentId]);
+        
         return $this->notificationOn($uid, $class_name, $externalquery, NotificationChannels::CHANNEL_FAVOURITES);
     }
     
@@ -211,13 +258,24 @@ class NotifierRepository
                 $user = Yii::$app->user->identity;
                 $userId = $user->profile->id;
             }
+            
             $query = new Query();
-            $query->distinct()->select('count(*) as number')->from(Notification::tableName() . " a");
-            $query->innerJoin(NotificationsRead::tableName() . " b", "a.id = b.notification_id and b.user_id = " . $userId . " and a.content_id = " . $model->id);
-            $query->andWhere(["a.channels" => NotificationChannels::CHANNEL_FAVOURITES, "a.class_name" => get_class($model)]);
+            $query
+                ->distinct()
+                ->select('count(*) as number')
+                ->from(Notification::tableName() . ' a')
+                ->innerJoin(
+                    NotificationsRead::tableName() . ' b', 
+                    'a.id = b.notification_id and b.user_id = ' . $userId . ' and a.content_id = ' . $model->id
+                )
+                ->andWhere([
+                    'a.channels' => NotificationChannels::CHANNEL_FAVOURITES, 
+                    'a.class_name' => get_class($model)]
+                );
+            
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         
         return ($result > 0);

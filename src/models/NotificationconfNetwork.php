@@ -10,15 +10,14 @@
  */
 
 namespace open20\amos\notificationmanager\models;
-;
 
 use Yii;
 use yii\helpers\ArrayHelper;
 
 /**
- * This is the model class for table "notification_send_email".
+ * This is the model class for table "notificationconf_network".
  */
-class NotificationSendEmail extends \open20\amos\notificationmanager\models\base\NotificationSendEmail
+class NotificationconfNetwork extends \open20\amos\notificationmanager\models\base\NotificationconfNetwork
 {
     public function representingColumn()
     {
@@ -67,13 +66,43 @@ class NotificationSendEmail extends \open20\amos\notificationmanager\models\base
 
         return [
             [
-                'slug' => 'classname',
-                'label' => $labels['classname'],
-                'type' => 'string'
+                'slug' => 'user_id',
+                'label' => $labels['user_id'],
+                'type' => 'integer'
             ],
             [
-                'slug' => 'content_id',
-                'label' => $labels['content_id'],
+                'slug' => 'models_classname_id',
+                'label' => $labels['models_classname_id'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'record_id',
+                'label' => $labels['record_id'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'email',
+                'label' => $labels['email'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'sms',
+                'label' => $labels['sms'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'notifications_enabled',
+                'label' => $labels['notifications_enabled'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'notify_content_pubblication',
+                'label' => $labels['notify_content_pubblication'],
+                'type' => 'integer'
+            ],
+            [
+                'slug' => 'notify_comments',
+                'label' => $labels['notify_comments'],
                 'type' => 'integer'
             ],
         ];

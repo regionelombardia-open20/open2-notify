@@ -1,8 +1,17 @@
 <?php
 
-namespace lispa\amos\notificationmanager\models\base;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
 
-use lispa\amos\core\record\Record;
+namespace open20\amos\notificationmanager\models\base;
+
+use open20\amos\core\record\Record;
 use Yii;
 
 /**

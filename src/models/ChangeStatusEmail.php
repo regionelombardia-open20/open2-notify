@@ -1,27 +1,27 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\models
+ * @package    open20\amos\notificationmanager\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\models;
+namespace open20\amos\notificationmanager\models;
 
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Class ChangeStatusEmail
  *
  * Model used to create a custom email on change workflow status
  *
- * @package lispa\amos\notificationmanager\models
+ * @package open20\amos\notificationmanager\models
  */
-class ChangeStatusEmail extends Object
+class ChangeStatusEmail extends BaseObject
 {
     /**
      * @var string $startStatus

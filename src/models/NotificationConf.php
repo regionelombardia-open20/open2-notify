@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\models
+ * @package    open20\amos\notificationmanager\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\models;
+namespace open20\amos\notificationmanager\models;
 
-use lispa\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\AmosNotify;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 
@@ -24,6 +24,9 @@ use yii\db\ActiveRecord;
  * @property integer $user_id
  * @property integer $email
  * @property integer $sms
+ * @property integer $notifications_enabled
+ * @property integer $notify_content_pubblication
+ * @property integer $notify_comments
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -31,9 +34,9 @@ use yii\db\ActiveRecord;
  * @property integer $updated_by
  * @property integer $deleted_by
  *
- * @property \lispa\amos\core\user\User $user
+ * @property \open20\amos\core\user\User $user
  *
- * @package lispa\amos\notificationmanager\models
+ * @package open20\amos\notificationmanager\models
  */
 class NotificationConf extends ActiveRecord
 {
@@ -52,7 +55,7 @@ class NotificationConf extends ActiveRecord
     {
         return [
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['user_id', 'email', 'sms', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
+            [['user_id', 'email', 'sms', 'notifications_enabled', 'notify_content_pubblication', 'notify_comments', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['user_id'], 'required'],
         ];
     }
@@ -96,6 +99,6 @@ class NotificationConf extends ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(\lispa\amos\core\user\User::className(), ['id' => 'user_id']);
+        return $this->hasOne(\open20\amos\core\user\User::className(), ['id' => 'user_id']);
     }
 }

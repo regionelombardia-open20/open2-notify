@@ -13,22 +13,25 @@ namespace open20\amos\notificationmanager\widgets;
 
 use open20\amos\admin\models\UserProfile;
 use open20\amos\core\helpers\Html;
+use open20\amos\core\models\ModelsClassname;
 use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\notificationmanager\models\NotificationConf;
+use open20\amos\notificationmanager\models\NotificationconfNetwork;
 use open20\amos\notificationmanager\models\NotificationsConfOpt;
 use kartik\select2\Select2;
 use yii\base\Widget;
+use yii\data\ActiveDataProvider;
 
 /**
  * Class NotifyFrequencyWidget
  * @package open20\amos\notificationmanager\widgets
  */
-class NotifyFrequencyWidget extends Widget
+class NotifyFrequencyAdvancedWidget extends Widget
 {
     /**
      * @var string $layout It's permitted to set {emailNotifyFrequency} and {smsNotifyFrequency}. Default to {emailNotifyFrequency}.
      */
-    public $layout = '{emailNotifyFrequency}';
+    public $layout = '{generalNotifyFrequency}';
     
     /**
      * @var UserProfile $model
@@ -58,7 +61,8 @@ class NotifyFrequencyWidget extends Widget
     /**
      * @var null
      */
-    private $defaultValueEmail = null;
+    private $defaultValueEmail = 2;
+
     /**
      * @var AmosNotify $notifyModule
      */
@@ -80,6 +84,12 @@ class NotifyFrequencyWidget extends Widget
         /** @var NotificationConf $notificationConfModel */
         $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
         $this->notificationConf = $notificationConfModel::findOne(['user_id' => $this->model->user_id]);
+        if(empty($this->notificationConf)){
+            /** @var NotificationConf $notificationConfModel */
+            $notificConf = $this->notifyModule->createModel('NotificationConf');
+            $notificConf->user_id = $this->model->user_id;
+            $this->notificationConf = $notificConf;
+        }
     }
     
     /**
@@ -229,6 +239,8 @@ class NotifyFrequencyWidget extends Widget
                 return $this->renderEmailNotifyFrequencySelector();
             case '{smsNotifyFrequency}':
                 return $this->renderSmsNotifyFrequencySelector();
+            case '{generalNotifyFrequency}':
+                return $this->renderGeneralNotifyFrequencySelector();
             default:
                 return false;
         }
@@ -253,7 +265,7 @@ class NotifyFrequencyWidget extends Widget
                 'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
             ]
         ];
-        if (!is_null($this->notificationConf)) {
+        if (!is_null($this->notificationConf)  && !$this->notificationConf->isNewRecord) {
             $widgetConf['value'] = $this->notificationConf->email;
         }else{
             if(!empty($this->defaultValueEmail)){
@@ -263,8 +275,10 @@ class NotifyFrequencyWidget extends Widget
             }
 
         }
+
         $html .= Select2::widget($widgetConf);
         $html .= Html::endTag('div');
+
         return $html;
     }
     
@@ -288,11 +302,58 @@ class NotifyFrequencyWidget extends Widget
             ]
         ];
 
-        if (!is_null($this->notificationConf)) {
+        if (!is_null($this->notificationConf) &&  !$this->notificationConf->isNewRecord) {
             $widgetConf['value'] = $this->notificationConf->sms;
         }
         $html .= Select2::widget($widgetConf);
         $html .= Html::endTag('div');
         return $html;
+    }
+
+    /**
+     * Render the email notify frequency selector.
+     * @return string
+     */
+    public function renderGeneralNotifyFrequencySelector()
+    {
+        /** @var NotificationsConfOpt $notificationConfOpt */
+        $notificationConfOpt = $this->notifyModule->createModel('NotificationsConfOpt');
+        $widgetConfData = $notificationConfOpt::emailFrequencyValueAndLabels();
+
+        $dataProviderNetwork = null;
+        $moduleCommunity = \Yii::$app->getModule('community');
+        
+        if($moduleCommunity){
+            $model = new \open20\amos\community\models\Community();
+            $query = $model->getUserNetworkQuery($this->model->user_id);
+            $dataProviderNetwork = new ActiveDataProvider([
+                'query' => $query,
+            ]);
+//            foreach ($query->all() as $community){
+//                pr($community->name);
+//            }
+        }
+        $notificationNetworkValues = [];
+        $modelClassname = ModelsClassname::find()->andWhere(['module' => 'community'])->one();
+        if($modelClassname) {
+            /** @var NotificationconfNetwork $notificationConfNetworkModel */
+            $notificationConfNetworkModel = $this->notifyModule->createModel('NotificationconfNetwork');
+            $notificationNetwork = $notificationConfNetworkModel::find()
+                ->andWhere(['models_classname_id' => $modelClassname->id])
+                ->andWhere(['user_id' => $this->model->user_id])->all();
+            foreach ($notificationNetwork as $conf){
+                $notificationNetworkValues[$conf->record_id] = $conf->email;
+            }
+        }
+
+        $htmlFrequencySelector = $this->renderEmailNotifyFrequencySelector();
+        return $this->render('general_notify', [
+            'widget' => $this,
+            'htmlFrequencySelector' => $htmlFrequencySelector,
+            'notificationConf' => $this->notificationConf,
+            'notificationNetworkValues' => $notificationNetworkValues,
+            'dataProviderNetwork' => $dataProviderNetwork,
+            'widgetConfData'=> $widgetConfData
+        ]);
     }
 }

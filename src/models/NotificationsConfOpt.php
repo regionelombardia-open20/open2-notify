@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify\models
+ * @package    open20\amos\notify\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\models;
+namespace open20\amos\notificationmanager\models;
 
-use lispa\amos\notificationmanager\AmosNotify;
-use yii\base\Object;
+use open20\amos\notificationmanager\AmosNotify;
+use yii\base\BaseObject;
 
 /**
  * Class NotificationsConfOpt
- * @package lispa\amos\notificationmanager\models
+ * @package open20\amos\notificationmanager\models
  */
-class NotificationsConfOpt extends Object
+class NotificationsConfOpt extends BaseObject
 {
     const EMAIL_OFF = 0xFFFF;
     const EMAIL_IMMEDIATE = 0x0001;

@@ -1,27 +1,27 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\base\builder
+ * @package    open20\amos\notificationmanager\base\builder
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base\builder;
+namespace open20\amos\notificationmanager\base\builder;
 
-use lispa\amos\core\interfaces\ModelGrammarInterface;
-use lispa\amos\core\interfaces\ModelLabelsInterface;
-use lispa\amos\core\user\User;
-use lispa\amos\notificationmanager\AmosNotify;
-use lispa\amos\notificationmanager\models\ChangeStatusEmail;
+use open20\amos\core\interfaces\ModelGrammarInterface;
+use open20\amos\core\interfaces\ModelLabelsInterface;
+use open20\amos\core\user\User;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\models\ChangeStatusEmail;
 use Yii;
 use yii\base\Exception;
 
 /**
  * Class CustomMailBuilder
- * @package lispa\amos\notificationmanager\base\builder
+ * @package open20\amos\notificationmanager\base\builder
  */
 class CustomMailBuilder extends AMailBuilder
 {
@@ -91,9 +91,9 @@ class CustomMailBuilder extends AMailBuilder
             if($email->template){
                 $this->setTemplate($email->template);
             } elseif($email->toCreator){
-                $this->setTemplate("@vendor/lispa/amos-" . AmosNotify::getModuleName() . "/src/views/email/validated");
+                $this->setTemplate("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/validated");
             } else {
-                $this->setTemplate("@vendor/lispa/amos-" . AmosNotify::getModuleName() . "/src/views/email/validator");
+                $this->setTemplate("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/validator");
             }
             if(count($email->params)){
                 $this->setParams($email->params);
@@ -146,7 +146,7 @@ class CustomMailBuilder extends AMailBuilder
                 $ris = $controller->renderPartial($this->getTemplate(), $this->getParams());
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         return $ris;

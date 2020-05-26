@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\views\email
+ * @package    open20\amos\notificationmanager\views\email
  * @category   CategoryName
  */
 
-use lispa\amos\notificationmanager\AmosNotify;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\cwh\base\ModelContentInterface;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\core\helpers\Html;
+use open20\amos\cwh\base\ModelContentInterface;
 if(!empty($profile)) {
     $this->params['profile'] = $profile;
 }
@@ -52,7 +52,7 @@ if(!empty($profile)) {
                 <?php
                 $user = $model->getCreatedUserProfile()->one();
                 if(!is_null($user)){
-                        echo \lispa\amos\admin\widgets\UserCardWidget::widget([
+                        echo \open20\amos\admin\widgets\UserCardWidget::widget([
                             'model' => $user,
                             'onlyAvatar' => true,
                             'absoluteUrl' => true
@@ -62,7 +62,7 @@ if(!empty($profile)) {
             </div>
 
             <div style="margin-left: 20px;">
-                <?= \lispa\amos\core\forms\PublishedByWidget::widget([
+                <?= \open20\amos\core\forms\PublishedByWidget::widget([
                     'model' => $model,
                     'layout' => $layout,
                 ]) ?>

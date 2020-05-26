@@ -1,14 +1,14 @@
 {
-  "name": "lispa/amos-notify",
+  "name": "open20/amos-notify",
   "description": "Modulo di gestione notifiche - plugin",
   "keywords": [
     "amos",
     "notifiche",
     "yii2"
   ],
-  "homepage": "http://www.lispa.it/",
+  "homepage": "http://www.open20.it/",
   "type": "component",
-  "proscription": "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "support": {
     "issues": "https://github.com/yiisoft/yii2/issues?state=open",
     "forum": "http://www.yiiframework.com/forum/",
@@ -18,10 +18,10 @@
   },
   "require": {
     "php": ">=5.4.0",
-    "lispa/amos-admin" : "*",
-    "lispa/amos-core" : "*",
-    "lispa/amos-email-manager" : "*",
-    "lispa/amos-workflow" : "*"
+    "open20/amos-admin": "^2.0",
+    "open20/amos-core": "^1.9.61",
+    "open20/amos-email-manager": "^1.1",
+    "open20/amos-workflow": "^1.0"
   },
   "config": {
     "process-timeout": 1800,
@@ -29,10 +29,10 @@
   },
   "autoload": {
     "psr-4": {
-      "lispa\\amos\\notificationmanager\\": "src"
+      "open20\\amos\\notificationmanager\\": "src"
     }
   },
   "scripts": {
-    "post-install-cmd": "php yii migrate --migrationPath=@vendor/lispa/amos-notify/migrations --interactive=0"
+    "post-install-cmd": "php yii migrate --migrationPath=@vendor/open20/amos-notify/migrations --interactive=0"
   }
 }

@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notify
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\views\widgets;
+namespace open20\amos\notificationmanager\views\widgets;
 
 use yii\bootstrap\Widget;
 use yii\bootstrap\Nav;

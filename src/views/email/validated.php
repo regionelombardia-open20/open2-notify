@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\views\email
+ * @package    open20\amos\notificationmanager\views\email
  * @category   CategoryName
  */
 
-use lispa\amos\cwh\base\ModelContentInterface;
-use lispa\amos\notificationmanager\AmosNotify;
-use lispa\amos\core\helpers\Html;
+use open20\amos\cwh\base\ModelContentInterface;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\core\helpers\Html;
  if(!empty($validator)) {
     $this->params['profile'] = $validator;
 }
@@ -33,7 +33,7 @@ use lispa\amos\core\helpers\Html;
         <div style="box-sizing:border-box;">
             <div style="box-sizing:border-box;padding:0;font-weight:bold;color:#000000;font-weight: normal;">
                 <?php
-                if (!$model instanceof \lispa\amos\admin\models\UserProfile) {
+                if (!$model instanceof \open20\amos\admin\models\UserProfile) {
                     echo $model->getDescription(false);
                 }
                 ?>
@@ -53,7 +53,7 @@ use lispa\amos\core\helpers\Html;
                 <?php
                 $user = $model->getCreatedUserProfile()->one();
                 if(!is_null($user)) {
-                    echo \lispa\amos\admin\widgets\UserCardWidget::widget([
+                    echo \open20\amos\admin\widgets\UserCardWidget::widget([
                         'model' => $user,
                         'onlyAvatar' => true,
                         'absoluteUrl' => true
@@ -63,7 +63,7 @@ use lispa\amos\core\helpers\Html;
             </div>
 
             <div style="margin-left: 20px;">
-                <?= \lispa\amos\core\forms\PublishedByWidget::widget([
+                <?= \open20\amos\core\forms\PublishedByWidget::widget([
                     'model' => $model,
                     'layout' => $layout,
                 ]) ?>
@@ -71,7 +71,7 @@ use lispa\amos\core\helpers\Html;
                 <div style="margin-top:20px; display: flex; padding: 10px;">
                     <div
                         style="width: 50px; height: 50px; overflow: hidden;-webkit-border-radius: 50%; -moz-border-radius: 50%; border-radius: 50%;float: left;">
-                        <?= \lispa\amos\admin\widgets\UserCardWidget::widget([
+                        <?= \open20\amos\admin\widgets\UserCardWidget::widget([
                             'model' => $validator,
                             'onlyAvatar' => true,
                             'absoluteUrl' => true
@@ -79,7 +79,7 @@ use lispa\amos\core\helpers\Html;
                     </div>
 
                     <div style="margin: 15px 0 0 20px;">
-                        <?= AmosNotify::t('amosnotify', '#validated_by') . ' ' . $validator->getSurnameName() ?>
+                        <?= AmosNotify::t('amosnotify', '#validated_by') . ' ' . $validator->nomeCognome ?>
                     </div>
                 </div>
 

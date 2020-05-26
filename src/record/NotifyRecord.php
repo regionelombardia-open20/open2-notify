@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\record
+ * @package    open20\amos\notificationmanager\record
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\record;
+namespace open20\amos\notificationmanager\record;
 
-use lispa\amos\notificationmanager\AmosNotify;
-use lispa\amos\notificationmanager\base\NotifyWidget;
-use lispa\amos\notificationmanager\models\NotificationChannels;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\base\NotifyWidget;
+use open20\amos\notificationmanager\models\NotificationChannels;
 use Yii;
 use yii\db\ActiveQuery;
 use yii\db\Expression;
@@ -22,9 +22,9 @@ use yii\helpers\ArrayHelper;
 
 /**
  * Class NotifyRecord
- * @package lispa\amos\notificationmanager\record
+ * @package open20\amos\notificationmanager\record
  */
-class NotifyRecord extends \lispa\amos\core\record\Record implements NotifyRecordInterface
+class NotifyRecord extends \open20\amos\core\record\Record implements NotifyRecordInterface
 {
     /**
      * @var string $isNewsFiledName
@@ -132,7 +132,7 @@ class NotifyRecord extends \lispa\amos\core\record\Record implements NotifyRecor
                 $user_id = $this->created_by;
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         return $user_id;
     }
@@ -187,7 +187,12 @@ class NotifyRecord extends \lispa\amos\core\record\Record implements NotifyRecor
         $notify = $this->getNotifier();
         if($notify)
         {
-            $notify->notificationOff(Yii::$app->getUser()->id, $this->modelClassName , $query, NotificationChannels::CHANNEL_READ);
+            $notify->notificationOff(
+                Yii::$app->getUser()->id, 
+                $this->modelClassName , 
+                $query, 
+                NotificationChannels::CHANNEL_READ
+            );
         }
     }
 }

@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\record
+ * @package    open20\amos\notificationmanager\record
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\record;
+namespace open20\amos\notificationmanager\record;
 
 /**
  * Interface NotifyRecordInterface
- * @package lispa\amos\notificationmanager\record
+ * @package open20\amos\notificationmanager\record
  */
 interface NotifyRecordInterface
 {

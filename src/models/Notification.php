@@ -1,28 +1,32 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notify
  * @category   CategoryName
  */
 
 
-namespace lispa\amos\notificationmanager\models;
+namespace open20\amos\notificationmanager\models;
 
+use open20\amos\notificationmanager\AmosNotify;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "notification".
  *
+ * @author -
  * @property integer $id
  * @property integer $user_id
  * @property integer $channels
  * @property integer $content_id
  * @property string $class_name
+ * @property integer $models_content_id
+ * @property integer $record_id
  * @property integer $created_at
  * @property integer $updated_at
  */
@@ -43,7 +47,7 @@ class Notification extends ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'channels', 'content_id', 'created_at', 'updated_at'], 'integer'],
+            [['user_id', 'channels', 'content_id', 'created_at', 'updated_at', 'models_content_id',  'record_id'], 'integer'],
             [['class_name'], 'string'],
         ];
     }
@@ -79,6 +83,6 @@ class Notification extends ActiveRecord
      */
     public function getNotificationsRead()
     {
-        return $this->hasMany(NotificationsRead::className(), ['notification_id' => 'id']);
+        return $this->hasMany(AmosNotify::instance()->model('NotificationsRead'), ['notification_id' => 'id']);
     }
 }

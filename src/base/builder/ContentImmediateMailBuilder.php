@@ -1,16 +1,16 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\base\builder
+ * @package    open20\amos\notificationmanager\base\builder
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base\builder;
+namespace open20\amos\notificationmanager\base\builder;
 
-use lispa\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\AmosNotify;
 
 class ContentImmediateMailBuilder extends ContentMailBuilder
 {
@@ -23,7 +23,7 @@ class ContentImmediateMailBuilder extends ContentMailBuilder
     {
         $controller = \Yii::$app->controller;
         $contents_number = count($resultset);
-        $ris = $controller->renderPartial("@vendor/lispa/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_immediate_email_header", [
+        $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_immediate_email_header", [
             'contents_number' => $contents_number
         ]);
         return $ris;

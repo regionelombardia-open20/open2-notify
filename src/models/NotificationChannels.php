@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify\models
+ * @package    open20\amos\notify\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\models;
+namespace open20\amos\notificationmanager\models;
 
-use lispa\amos\core\record\Record;
-use lispa\amos\notificationmanager\AmosNotify;
-use yii\base\Object;
+use open20\amos\core\record\Record;
+use open20\amos\notificationmanager\AmosNotify;
+use yii\base\BaseObject;
 use yii\db\Query;
 
 /**
  * Class NotificationChannels
- * @package lispa\amos\notificationmanager\models
+ * @package open20\amos\notificationmanager\models
  */
-class NotificationChannels extends Object
+class NotificationChannels extends BaseObject
 {
     const MANAGE_UP = 'up';
     const MANAGE_DOWN = 'down';
@@ -34,7 +34,21 @@ class NotificationChannels extends Object
     const CHANNEL_READ_DETAIL = 0x0F01;
     const CHANNEL_FAVOURITES = 0xE290;
     const CHANNEL_ALL = 0xFFFF;
-    
+
+    /**
+     * @var AmosNotify $notifyModule
+     */
+    protected $notifyModule = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->notifyModule = AmosNotify::instance();
+    }
+
     /**
      * @param string $modelClassName
      * @param string $type
@@ -83,13 +97,16 @@ class NotificationChannels extends Object
 //                }
 //            }
 
-            $notification = Notification::find()->andWhere([
+            /** @var Notification $notificationModel */
+            $notificationModel = $this->notifyModule->createModel('Notification');
+            $notification = $notificationModel::find()->andWhere([
                 'channels' => $channel,
                 'content_id' => $modelData['id'],
                 'class_name' => $modelClassName
             ])->one();
             if (is_null($notification)) {
-                $notification = new Notification();
+                /** @var Notification $notificationModel */
+                $notification = $this->notifyModule->createModel('Notification');
                 $notification->channels = $channel;
                 $notification->content_id = $modelData['id'];
                 $notification->class_name = $modelClassName;
@@ -136,10 +153,14 @@ class NotificationChannels extends Object
             'success' => $allOk,
             'errors' => []
         ];
-        $notifications = Notification::find()->andWhere(['channels' => $channel])->all();
+        /** @var Notification $notificationModel */
+        $notificationModel = $this->notifyModule->createModel('Notification');
+        $notifications = $notificationModel::find()->andWhere(['channels' => $channel])->all();
         foreach ($notifications as $notification) {
+            /** @var NotificationsRead $notificationsReadModel */
+            $notificationsReadModel = $this->notifyModule->createModel('NotificationsRead');
             /** @var Notification $notification */
-            $notificationsRead = NotificationsRead::find()->andWhere(['notification_id' => $notification->id])->all();
+            $notificationsRead = $notificationsReadModel::find()->andWhere(['notification_id' => $notification->id])->all();
             $nrOk = true;
             foreach ($notificationsRead as $notificationRead) {
                 /** @var NotificationsRead $notificationRead */
@@ -173,12 +194,15 @@ class NotificationChannels extends Object
      */
     private function saveNotificationSendEmail($modelClassName, $channel, $modelData){
         if($channel == NotificationChannels::CHANNEL_MAIL) {
-            $notificationSendEmail = NotificationSendEmail::find()->andWhere([
+            /** @var NotificationSendEmail $notificationSendEmailModel */
+            $notificationSendEmailModel = $this->notifyModule->createModel('NotificationSendEmail');
+            $notificationSendEmail = $notificationSendEmailModel::find()->andWhere([
                 'content_id' => $modelData['id'],
                 'class_name' => $modelClassName
             ])->one();
             if (is_null($notificationSendEmail)) {
-                $notificationSendEmail = new NotificationSendEmail();
+                /** @var NotificationSendEmail $notificationSendEmailModel */
+                $notificationSendEmail = $this->notifyModule->createModel('NotificationSendEmail');
                 $notificationSendEmail->content_id = $modelData['id'];
                 $notificationSendEmail->class_name = $modelClassName;
             }

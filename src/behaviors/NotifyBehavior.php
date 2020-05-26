@@ -1,21 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notify
+ * @package    open20\amos\notificationmanager\behaviors
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\behaviors;
+namespace open20\amos\notificationmanager\behaviors;
 
-use lispa\amos\notificationmanager\AmosNotify;
-use lispa\amos\notificationmanager\models\NotificationChannels;
-use \lispa\amos\core\controllers\CrudController;
-use lispa\amos\notificationmanager\models\NotificationSendEmail;
-use ReflectionClass;
+use open20\amos\core\models\ModelsClassname;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\models\NotificationChannels;
+use \open20\amos\core\controllers\CrudController;
+use open20\amos\notificationmanager\models\NotificationSendEmail;
+use open20\amos\notificationmanager\models\NotificationsRead;
 use Yii;
 use yii\base\Behavior;
 use yii\base\Exception;
@@ -25,7 +26,7 @@ use yii\web\Application;
 
 /**
  * Class NotifyBehavior
- * @package lispa\amos\core\behaviors
+ * @package open20\amos\core\behaviors
  */
 class NotifyBehavior extends Behavior {
 
@@ -44,11 +45,18 @@ class NotifyBehavior extends Behavior {
     private $mailStatuses = [];
 
     /**
+     * @var AmosNotify $notifyModule
+     */
+    public $notifyModule = null;
+
+    /**
      * 
+     * @see 
      */
     public function init() {
         $this->notificationInit();
         parent::init();
+        $this->notifyModule = AmosNotify::instance();
     }
 
     /**
@@ -163,7 +171,7 @@ class NotifyBehavior extends Behavior {
             }
             $this->notify($event);
         } catch (Exception $bex) {
-            Yii::getLogger()->log($bex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -176,7 +184,7 @@ class NotifyBehavior extends Behavior {
             $model = $event->sender;
             $this->persistNotify($model);
         } catch (Exception $bex) {
-            Yii::getLogger()->log($bex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -189,7 +197,7 @@ class NotifyBehavior extends Behavior {
             $model = $event->sender;
             $this->persistNotifyReaded($model);
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
     
@@ -202,7 +210,7 @@ class NotifyBehavior extends Behavior {
             $model = $event->sender;
             $this->persistNotifyReaded($model,NotificationChannels::CHANNEL_READ_DETAIL);
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -213,33 +221,59 @@ class NotifyBehavior extends Behavior {
      */
     private function persistNotify($model) {
         try {
-            $notifyWidget = AmosNotify::instance();
-            if($notifyWidget != null){
+        $validatori = $model->validatori;
+            if($this->notifyModule != null){
                 foreach ($this->evaluateChannels() as $channel) {
-                    if($notifyWidget->confirmEmailNotification) {
+                    if($this->notifyModule->confirmEmailNotification) {
                         //used for the modal to choose if you want to send the email notification
                         $this->saveNotificationSendEmail(get_class($model), $channel, $model->getAttributes()[$model->primaryKey()[0]]);
                     }
-                    $notify = $notifyWidget->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
+
+                    $notify = $this->notifyModule->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
                     'channels' => $channel, 'class_name' => get_class($model) ]);
                      if($notify == null){
-                        $notify = $notifyWidget->createModel('Notification');
+                        $notify = $this->notifyModule->createModel('Notification');
                         if(\Yii::$app instanceof Application) {
                             $notify->user_id = Yii::$app->user->id;
                         }else{
                             $notify->user_id = 0;
                         }
+
+                        //create notification for a network
                         $notify->content_id = $model->getAttributes()[$model->primaryKey()[0]];
                         $notify->channels = $channel;
                         $notify->class_name = get_class($model);
+
+                         if($validatori){
+                            if(is_array($validatori)){
+                                $validatori = reset($validatori);
+                            }
+                            if(strpos($validatori, 'user') === false) {
+                                $exploded = explode('-', $validatori);
+                                if (count($exploded) == 2) {
+                                    $modelsClassname = ModelsClassname::find()->andWhere(['module' => $exploded[0]])->one();
+                                    if ($modelsClassname) {
+                                        $notify->models_classname_id = $modelsClassname->id;
+                                        $notify->record_id = $exploded[1];
+                                    }
+                                }
+                            }
+                        }
                      }else{
                          $notify->updated_at = null;
                      }
-                    $notify->save();
+                     $canSave = true;
+                    if($model instanceof \open20\amos\core\interfaces\NotificationPersonalizedQueryInterface){
+                         $canSave = $model->canSaveNotification();
+                     }
+                     if($canSave) {
+                         $notify->save(false);
+                     }
                 }
             }
+
         } catch (Exception $bex) {
-            Yii::getLogger()->log($bex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -252,12 +286,12 @@ class NotifyBehavior extends Behavior {
     private function persistNotifyReaded($model,$channel = NotificationChannels::CHANNEL_READ) {
 
         try {
-             $notifyWidget = AmosNotify::instance();
-            if($notifyWidget != null){
-                $notify = $notifyWidget->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
+            if($this->notifyModule != null){
+                $notify = $this->notifyModule->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
                     'channels' => $channel, 'class_name' => get_class($model) ]);
                 if ($notify) {
-                    $notify_read = $notifyWidget->createModel('NotificationsRead');
+                    /** @var NotificationsRead $notify_read */
+                    $notify_read = $this->notifyModule->createModel('NotificationsRead');
                     $notify_load = $notify_read->findOne(['user_id' => Yii::$app->user->id, 'notification_id' => $notify->id]);
                     if ($notify_load) {
                         $notify_read = $notify_load;
@@ -269,7 +303,7 @@ class NotifyBehavior extends Behavior {
                 }
             }
         } catch (Exception $bex) {
-            Yii::getLogger()->log($bex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -280,8 +314,15 @@ class NotifyBehavior extends Behavior {
     private function evaluateChannels() {
 
         if (in_array(NotificationChannels::CHANNEL_ALL, $this->channels)) {
-            $refl = new ReflectionClass(NotificationChannels::className());
-            return $refl->getConstants();
+            return [
+                NotificationChannels::CHANNEL_MAIL,
+                NotificationChannels::CHANNEL_IMMEDIATE_MAIL, // NOT USED
+                NotificationChannels::CHANNEL_UI,
+                NotificationChannels::CHANNEL_SMS,
+                NotificationChannels::CHANNEL_READ,
+                NotificationChannels::CHANNEL_READ_DETAIL,
+                NotificationChannels::CHANNEL_FAVOURITES,
+                NotificationChannels::CHANNEL_ALL];
         }
         return $this->channels;
     }
@@ -310,15 +351,28 @@ class NotifyBehavior extends Behavior {
      * @param $modelData
      * @return bool
      */
-    private function saveNotificationSendEmail($modelClassName, $channel, $modelId){
-        if(\Yii::$app->request->post('saveNotificationSendEmail') && \Yii::$app->request->post('saveNotificationSendEmail') == 1) {
+    public function saveNotificationSendEmail($modelClassName, $channel, $modelId, $bypassCheckPostParam = false){
+        $isSetPost = false;
+        if (\Yii::$app instanceof Yii\console\Application){
+            $isPostCorrect = true;
+        }else{
+            $post = \Yii::$app->request->post('saveNotificationSendEmail');
+            $isPostCorrect = ($post && $post == 1);
+            $isSetPost = isset($post);
+        }
+
+        // if you validate the content from outside the update pge of the content, the modal is not shown and che record of notification-send.email is always created
+        if($bypassCheckPostParam || $isPostCorrect || !$isSetPost) {
             if ($channel == NotificationChannels::CHANNEL_MAIL) {
-                $notificationSendEmail = NotificationSendEmail::find()->andWhere([
+                /** @var NotificationSendEmail $notificationSendEmailModel */
+                $notificationSendEmailModel = $this->notifyModule->createModel('NotificationSendEmail');
+                $notificationSendEmail = $notificationSendEmailModel::find()->andWhere([
                     'content_id' => $modelId,
                     'classname' => $modelClassName
                 ])->one();
                 if (is_null($notificationSendEmail)) {
-                    $notificationSendEmail = new NotificationSendEmail();
+                    /** @var NotificationSendEmail $notificationSendEmail */
+                    $notificationSendEmail = $this->notifyModule->createModel('NotificationSendEmail');
                     $notificationSendEmail->content_id = $modelId;
                     $notificationSendEmail->classname = $modelClassName;
                 }

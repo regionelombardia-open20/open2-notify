@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\base
+ * @package    open20\amos\notificationmanager\base
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base;
+namespace open20\amos\notificationmanager\base;
 
-use lispa\amos\core\user\User;
+use open20\amos\core\user\User;
 
 /**
  * Interface Builder
- * @package lispa\amos\notificationmanager\base
+ * @package open20\amos\notificationmanager\base
  */
 interface Builder
 {

@@ -1,25 +1,25 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\base\builder
+ * @package    open20\amos\notificationmanager\base\builder
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base\builder;
+namespace open20\amos\notificationmanager\base\builder;
 
-use lispa\amos\core\interfaces\ModelGrammarInterface;
-use lispa\amos\core\interfaces\ModelLabelsInterface;
-use lispa\amos\core\user\User;
-use lispa\amos\notificationmanager\AmosNotify;
+use open20\amos\core\interfaces\ModelGrammarInterface;
+use open20\amos\core\interfaces\ModelLabelsInterface;
+use open20\amos\core\user\User;
+use open20\amos\notificationmanager\AmosNotify;
 use Yii;
 
 /**
  * Class ValidatedMailBuilder
- * @package lispa\amos\notificationmanager\base\builder
+ * @package open20\amos\notificationmanager\base\builder
  */
 class ValidatedMailBuilder extends AMailBuilder
 {
@@ -48,19 +48,19 @@ class ValidatedMailBuilder extends AMailBuilder
         $model = reset($resultset);
 
         try {
-            $userid = $model->getStatusLastUpdateUser($model->getValidatedStatus());
+            $userid = \Yii::$app->user->id; //$model->getStatusLastUpdateUser($model->getValidatedStatus());
             if (!is_null($userid)) {
                 $user = User::findOne($userid);
                 $comment = $model->getStatusLastUpdateComment($model->getValidatedStatus());
                 $controller = \Yii::$app->controller;
-                $ris = $controller->renderPartial("@vendor/lispa/amos-" . AmosNotify::getModuleName() . "/src/views/email/validated", [
+                $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/validated", [
                     'model' => $model,
                     'validator' => $user->getUserProfile()->one(),
                     'comment' => $comment
                 ]);
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         return $ris;

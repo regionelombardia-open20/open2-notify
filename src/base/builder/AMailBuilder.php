@@ -1,40 +1,62 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\notificationmanager\base\builder
+ * @package    open20\amos\notificationmanager\base\builder
  * @category   CategoryName
  */
 
-namespace lispa\amos\notificationmanager\base\builder;
+namespace open20\amos\notificationmanager\base\builder;
 
-use lispa\amos\core\user\User;
-use lispa\amos\core\utilities\Email;
-use lispa\amos\notificationmanager\base\Builder;
+use open20\amos\core\user\User;
+use open20\amos\core\utilities\Email;
+use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\notificationmanager\base\Builder;
+use open20\amos\notificationmanager\models\NotificationConf;
 use Yii;
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Class AMailBuilder
- * @package lispa\amos\notificationmanager\base\builder
+ * @package open20\amos\notificationmanager\base\builder
  */
-abstract class AMailBuilder extends Object implements Builder
+abstract class AMailBuilder extends BaseObject implements Builder
 {
+    /**
+     * @var AmosNotify $notifyModule
+     */
+    public $notifyModule = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->notifyModule = AmosNotify::instance();
+    }
+
     /**
      * @param array $userIds
      * @param array $resultset
+     * @param bool $checkContentPubblication
      * @return bool
      */
-    public function sendEmail(array $userIds, array $resultset)
+    public function sendEmail(array $userIds, array $resultset, $checkContentPubblication = true)
     {
+
         $allOk = true;
         try {
             foreach ($userIds as $id) {
                 $user = User::findOne($id);
                 if (!is_null($user)) {
+                    /** @var NotificationConf $notificationConfModel */
+                    $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
+                    $notificationconf = $notificationConfModel::find()->andWhere(['user_id' => $id])->one();
+                    $contentNotificationEnabled = $notificationconf->notify_content_pubblication;
                     $this->setUserLanguage($id);
                     $subject = $this->getSubject($resultset);
                     $message = $this->renderEmail($resultset, $user);
@@ -44,7 +66,12 @@ abstract class AMailBuilder extends Object implements Builder
                         // Use default platform email assistance
                         $from = Yii::$app->params['email-assistenza'];
                     }
-                    $ok = $email->sendMail($from, [$user->email], $subject, $message);
+
+                    $ok = false;
+                    if($contentNotificationEnabled || $checkContentPubblication == false){
+                        $ok = $email->sendMail($from, [$user->email], $subject, $message);
+                    }
+
                     if (!$ok) {
                         Yii::getLogger()->log("Errore invio mail da '$from' a '$user->email'", \yii\log\Logger::LEVEL_ERROR);
                         $allOk = false;
@@ -52,7 +79,7 @@ abstract class AMailBuilder extends Object implements Builder
                 }
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
             $allOk = false;
         }
         return $allOk;
@@ -65,7 +92,7 @@ abstract class AMailBuilder extends Object implements Builder
     {
         $module = \Yii::$app->getModule('translation');
         if ($module && !empty($module->enableUserLanguage) && $module->enableUserLanguage == true) {
-            /** @var \lispa\amos\translation\AmosTranslation $module */
+            /** @var \open20\amos\translation\AmosTranslation $module */
             $lang = $module->getUserLanguage($userId);
             $module->setAppLanguage($lang);
         }
