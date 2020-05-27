@@ -18,6 +18,7 @@ use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\notificationmanager\models\ChangeStatusEmail;
 use Yii;
 use yii\base\Exception;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class CustomMailBuilder
@@ -125,7 +126,7 @@ class CustomMailBuilder extends AMailBuilder
      */
     public function renderEmail(array $resultset, User $user)
     {
-        $ris = "";
+        $view = "";
         $model = reset($resultset);
 
         try {
@@ -143,11 +144,15 @@ class CustomMailBuilder extends AMailBuilder
                         'comment' => $comment
                     ]);
                 }
-                $ris = $controller->renderPartial($this->getTemplate(), $this->getParams());
+                $view = $controller->renderPartial($this->getTemplate(), $this->getParams());
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
+
+        $ris = $this->renderView(get_class($model), "full_mail", ArrayHelper::merge($this->getParams(),[
+            'original' => $view
+        ]));
 
         return $ris;
     }

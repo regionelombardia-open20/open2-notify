@@ -15,6 +15,7 @@ use open20\amos\core\interfaces\ModelGrammarInterface;
 use open20\amos\core\interfaces\ModelLabelsInterface;
 use open20\amos\core\user\User;
 use open20\amos\notificationmanager\AmosNotify;
+
 use Yii;
 
 /**
@@ -47,17 +48,30 @@ class ValidatorsMailBuilder extends AMailBuilder
         $ris = "";
         $model = reset($resultset);
         $moduleMyActivities = Yii::$app->getModule('myactivities');
+        $moduleNotify = Yii::$app->getModule('notify');
         $url = isset($moduleMyActivities) ? Yii::$app->urlManager->createAbsoluteUrl('myactivities/my-activities/index') : $model->getFullViewUrl();
 
         try {
+            $viewValidatorPath = "@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/validator";
+            if($moduleNotify && !empty($moduleNotify->viewPathEmailNotifyValidator) && !empty($moduleNotify->viewPathEmailNotifyValidator[get_class($model)])){
+                $viewValidatorPath = $moduleNotify->viewPathEmailNotifyValidator[get_class($model)];
+            }
+
             $controller = Yii::$app->controller;
-            $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/validator", [
+            $view = $controller->renderPartial($viewValidatorPath, [
                 'model' => $model,
                 'url' => $url,
                 'profile' => $user->userProfile
             ]);
+
+            $ris = $this->renderView(\Yii::$app->controller->module->name, "validators_content_email", [
+                'model' => $model,
+                'url' => $url,
+                'profile' => $user->userProfile,
+                'original' => $view
+            ]);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         return $ris;

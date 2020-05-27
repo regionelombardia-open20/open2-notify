@@ -50,15 +50,24 @@ class NotificationsConfOpt extends BaseObject
      * This method return the email frequency values and labels.
      * @return array
      */
-    public static function emailFrequencyValueAndLabels()
+    public static function emailFrequencyValueAndLabels($alsoImmediate = true)
     {
-        return [
-            NotificationsConfOpt::EMAIL_OFF => AmosNotify::t('amosnotify', '#never'),
-            NotificationsConfOpt::EMAIL_IMMEDIATE => AmosNotify::t('amosnotify', 'Immediate emails'),
-            NotificationsConfOpt::EMAIL_DAY => AmosNotify::t('amosnotify', 'Daily emails'),
-            NotificationsConfOpt::EMAIL_WEEK => AmosNotify::t('amosnotify', 'Weekly emails'),
-            NotificationsConfOpt::EMAIL_MONTH => AmosNotify::t('amosnotify', 'Monthly emails')
-        ];
+        if ($alsoImmediate){
+            return [
+                NotificationsConfOpt::EMAIL_OFF => AmosNotify::t('amosnotify', '#never'),
+                NotificationsConfOpt::EMAIL_IMMEDIATE => AmosNotify::t('amosnotify', 'Immediate emails'),
+                NotificationsConfOpt::EMAIL_DAY => AmosNotify::t('amosnotify', 'Daily emails'),
+                NotificationsConfOpt::EMAIL_WEEK => AmosNotify::t('amosnotify', 'Weekly emails'),
+                NotificationsConfOpt::EMAIL_MONTH => AmosNotify::t('amosnotify', 'Monthly emails')
+            ];        
+        } else {
+            return [
+                NotificationsConfOpt::EMAIL_OFF => AmosNotify::t('amosnotify', '#never'),
+                NotificationsConfOpt::EMAIL_DAY => AmosNotify::t('amosnotify', 'Daily emails'),
+                NotificationsConfOpt::EMAIL_WEEK => AmosNotify::t('amosnotify', 'Weekly emails'),
+                NotificationsConfOpt::EMAIL_MONTH => AmosNotify::t('amosnotify', 'Monthly emails')
+            ];        
+        }
     }
     
     /**

@@ -71,7 +71,41 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
-    
+    public $orderEmailSummary = [
+        'open20\amos\events\models\Event',
+        'open20\amos\news\models\News',
+        'open20\amos\partnershipprofiles\models',
+        'open20\amos\discussioni\models\DiscussioniTopic',
+        'open20\amos\sondaggi\models\Sondaggi',
+    ];
+
+    /** @var bool  */
+    public $enableNotificationContentLanguage = false;
+    public $sleepingUserDayLimit = 30; // If the user is inactive for those days he is sleeping
+    public $contentsLimit = 2;         // max items foreach content in email to userNotification
+    public $usersLimit = 5;            // max users in email to userNotification (es max contatti, max visits)
+
+
+    /**
+     * @var null |string
+     * [
+     *      'open20\amos\admin\models\UserProfile' => '@common/mail/notify_validation/validator_user_profile',
+     *      'open20\amos\news\models\News' => '@common/mail/notify_validation/validator_news',
+     * ]
+     *
+     */
+    public $viewPathEmailNotifyValidator = [];
+
+    /**
+     * @var null |string
+     * [
+     *      'open20\amos\admin\models\UserProfile' => '@common/mail/notify_validation/validated_user_profile',
+     *      'open20\amos\news\models\News' => '@common/mail/notify_validation/validated_news',
+     * ]
+     */
+    public $viewPathEmailNotifyValidated = [];
+
+
     private static $notifyworkflowlistener;
 
     /**
@@ -168,7 +202,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $repository->notificationOff($uid, $class_name, $externalquery, $channel);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -184,7 +218,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $repository->notificationOn($uid, $class_name, $externalquery, $channel);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -201,7 +235,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $result = $repository->countNotRead($uid, $class_name, $externalquery);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $result;
@@ -219,7 +253,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $result = $repository->modelIsRead($model, $uid);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $result;
@@ -239,7 +273,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $notificationChannel = AmosNotify::instance()->createModel('NotificationChannels');
             $retval = $notificationChannel->manageNewChannelNotifications($modelClassName, $channel, $type);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $retval;
@@ -258,7 +292,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $ok = $repository->favouriteOn($uid, $class_name, $contentId);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $ok;
@@ -277,7 +311,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $ok = $repository->favouriteOff($uid, $class_name, $contentId);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $ok;
@@ -295,7 +329,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             //$repository = new NotifierRepository();
             //$result = $repository->isFavorite($model, $uid);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
 
         return $result;
@@ -324,4 +358,12 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         $notifyUtility = new NotifyUtility();
         return $notifyUtility->setDefaultNotificationsConfs($userId);
     }
+
+    public function contactAccepted($user, $invitedUser) {
+
+        $notifyUtility = new NotifyUtility();
+        $notifyUtility->contactAccepted($user, $invitedUser);
+
+    }
+
 }

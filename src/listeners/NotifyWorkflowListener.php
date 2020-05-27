@@ -48,7 +48,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
         }
         catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
         return true;
     }
@@ -71,20 +71,27 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
                     $builder = $factory->create(BuilderFactory::VALIDATORS_MAIL_BUILDER);
                     if ($model instanceof Record) 
                     {
+                        //send email to VALIDATORS
                         $userIds = $model->getValidatorUsersId();
-                        if (empty($userIds)) {
-                            $user = User::findOne($model->created_by);
-                            if(!is_null($user)) {
-                                /**var $userprofile UserProfile */
-                                $userprofile = $user->getUserProfile()->one();
-                                if (!is_null($userprofile)) {
-                                    $facilUserProfile = $userprofile->getFacilitatorOrDefFacilitator();
-                                    if (!is_null($facilUserProfile)) {
-                                        $userIds[] = $facilUserProfile->user_id;
-                                    }
+
+                        // send email to FACILITATOR and FACILITATOR_EXTERNAL
+                        $user = User::findOne($model->created_by);
+                        if(!is_null($user)) {
+                            /**var $userprofile UserProfile */
+                            $userprofile = $user->getUserProfile()->one();
+                            if (!is_null($userprofile)) {
+                                $facilUserProfile = $userprofile->getFacilitatorOrDefFacilitator();
+                                if (!is_null($facilUserProfile)) {
+                                    $userIds[] = $facilUserProfile->user_id;
                                 }
+                                $facilExternalUserProfile = $userprofile->externalFacilitator;
+                                if (!is_null($facilUserProfile)) {
+                                    $userIds[] = $facilExternalUserProfile->user_id;
+                                }
+
                             }
                         }
+
                         $builder->sendEmail($userIds,[$model]);
                     }
                 }else{
@@ -105,7 +112,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
         }
         catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
 
     }
@@ -171,7 +178,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
 
         } catch(Exception $ex)
         {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
     }
 

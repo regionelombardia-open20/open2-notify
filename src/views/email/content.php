@@ -37,34 +37,12 @@ if (!empty($profile)) {
     </div>
     <div style="box-sizing:border-box;padding-bottom: 5px;">
         <div style="margin-top:20px; display: flex; padding: 10px;">
-		  <div style="width: 50px; height: 50px; overflow: hidden;-webkit-border-radius: 50%; -moz-border-radius: 50%; border-radius: 50%;float: left;">
-                <?php
-                $layout = '{publisher}';
-                if ($model instanceof ModelContentInterface) {
-                    $layout = '{publisher}{publishingRules}{targetAdv}';
-                }
-                $user = $model->createdUserProfile;
-                ?>
-
-                <?php if (!is_null($user)): ?>
-                    <?=
-                    \open20\amos\admin\widgets\UserCardWidget::widget([
-                        'model' => $user,
-                        'onlyAvatar' => true,
-                        'absoluteUrl' => true
-                    ])
-                    ?>
-<?php endif; ?>
-            </div>
-
-            <div style="margin-left: 20px; max-width: 430px;">
-                <?=
-                \open20\amos\core\forms\PublishedByWidget::widget([
-                    'model' => $model,
-                    'layout' => $layout,
-                ])
-                ?>
-				</div>
+            <?= ItemAndCardHeaderWidget::widget([
+                'model' => $model,
+                'publicationDateNotPresent' => true,
+                'showPrevalentPartnershipAndTargets' => true,
+                'absoluteUrlAvatar' => true,
+            ]); ?>
+        </div>
     </div>
-	</div>
 </div>

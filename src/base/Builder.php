@@ -31,4 +31,11 @@ interface Builder
      * @return string
      */
     public function getSubject(array $resultset);
+
+    /**
+     * @param array $resultSetNormal
+     * @param array $resultSetNetwork
+     * @param User $user
+     * @return mixed
+     */
 }

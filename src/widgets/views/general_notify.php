@@ -11,6 +11,7 @@
 /**
  * @var $widget \open20\amos\notificationmanager\widgets\NotifyFrequencyAdvancedWidget
  * @var $notificationConf \open20\amos\notificationmanager\models\NotificationConf
+ * @var $module AmosNotify
  */
 
 use yii\helpers\Html;
@@ -52,7 +53,25 @@ $this->registerJs($js);
 </div>
 
 <div id="container-nofification-enabled" style="display:none">
-    <div class="form-group col-xs-12"> <?= $htmlFrequencySelector ?></div>
+    <div class="form-group col-xs-12">
+        <?= $htmlFrequencySelector ?>
+    </div>
+    <?php if ($module && $module->enableNotificationContentLanguage) { ?>
+        <div class="form-group col-xs-12">
+            <div class="col-xs-6 nop">
+                <label class="control-label"> <?= AmosNotify::t('amosnotify', 'In quale lingua desideri ricevere le notifiche di riepilogo della piattaforma?') ?></label>
+                <?= \kartik\select2\Select2::widget([
+                    'name' => 'notify_preference_language',
+                    'data' => \yii\helpers\ArrayHelper::map(\lajax\translatemanager\models\Language::find()->andWhere(['status' => 1])->all(), 'language_id', 'language'),
+                    'options' => ['placeholder' => AmosNotify::t('amosnotify', 'Select...')],
+                    'pluginOptions' => [
+                        'multiple' => true,
+                    ],
+                    'value' => $notificationLanguagePreferences
+                ]) ?>
+            </div>
+        </div>
+    <?php } ?>
     <div class="form-group col-xs-12">
         <div class="checkbox">
             <?php echo \open20\amos\core\helpers\Html::activeCheckbox($widget->model, 'notify_from_editorial_staff', [
@@ -88,6 +107,56 @@ $this->registerJs($js);
         //            ]
         //        ); ?>
     </div>
+
+
+    <div class="form-group col-xs-12">
+        <label><?= AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti relativi all\'accettazione della richiesta di contatto da parte di un utente?') ?></label>
+        <?= Html::radioList('contatto_accettato_flag', $notificationConf->contatto_accettato_flag, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
+                'id' => 'contatto-accettato-flag'
+            ]
+        ) ?>
+        <!--        --><?php //Html::checkbox('contatto_accettato_flag', $notificationConf->contatto_accettato_flag,
+        //            [
+        //                'label' => AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti relativi all\'accettazione della richiesta di contatto da parte di un utente?', ['NomePiattaforma'=> \Yii::$app->name]),
+        //                 'id' => 'contatto-accettato-flag',
+        //            ]
+        //        ); ?>
+    </div>
+
+    <div class="form-group col-xs-12">
+        <label class="control-label"><?= AmosNotify::t('amosnotify', 'Con quale frequenza desideri ricevere aggiornamenti relativi ai contatti suggeriti?') ?></label>
+        <?= $htmlContattiSuggeritiEmailFrequencySelector ?>
+    </div>
+
+    <div class="form-group col-xs-12">
+        <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti riepilogativi in caso di un periodo di inattività del tuo profilo?') ?></label>
+        <?= Html::radioList('periodo_inattivita_flag', $notificationConf->periodo_inattivita_flag, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
+                'id' => 'periodo-inattivita-flag'
+            ]
+        ) ?>
+        <!--        -->
+        <?php
+        //Html::checkbox('periodo_inattivita_flag', $notificationConf->periodo_inattivita_flag,
+        //            [
+        //                'label' => AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti riepilogativi in caso di un periodo di inattività del tuo profilo?', ['NomePiattaforma'=> \Yii::$app->name]),
+        //                 'id' => 'contatto-accettato-flag',
+        //            ]
+        //        );
+        ?>
+    </div>
+
+
+    <div class="form-group col-xs-12">
+        <label class="control-label"><?= AmosNotify::t('amosnotify', 'Con quale frequenza desideri ricevere aggiornamenti relativi ai tuoi contenuti di successo?') ?></label>
+        <?= $htmlContenutiSuccessoEmailFrequencySelector ?>
+    </div>
+
+
+    <div class="form-group col-xs-12">
+        <label class="control-label"><?= AmosNotify::t('amosnotify', 'Con quale frequenza desideri ricevere aggiornamenti relativi alle visualizzazioni del tuo profilo?') ?></label>
+        <?= $htmlProfiloSuccessoEmailFrequencySelector ?>
+    </div>
+
 
     <?php
     if (!empty($dataProviderNetwork)) {

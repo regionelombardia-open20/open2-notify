@@ -60,4 +60,6 @@ return [
     'Weekly emails' => 'Weekly emails',
     'Weekly sms' => 'Weekly sms',
     '#with_comment' => 'Comment:',
+    "Lingua del contenuto" => "Content language",
+    "Select..." => "Select...",
 ];

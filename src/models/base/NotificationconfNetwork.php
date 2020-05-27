@@ -97,4 +97,6 @@ class  NotificationconfNetwork extends \open20\amos\core\record\Record
     {
         return $this->hasOne(\open20\amos\core\models\ModelsClassname::className(), ['id' => 'models_classname_id']);
     }
+
+
 }

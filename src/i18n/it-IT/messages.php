@@ -60,5 +60,17 @@ return [
     'Weekly emails' => 'Email settimanali',
     'Weekly sms' => 'Sms settimanali',
     '#with_comment' => 'Commento:',
-    'Frequency' => 'Frequenza'
+    'Frequency' => 'Frequenza',
+    '#Commentato da ##n## persone' => 'Commentato da {0} persone',
+    '#Letto da ##n## persone' => 'Letto da {0} persone',
+    '#Like da ##n## persone' => 'Apprezzato da {0} persone',
+    '#Visto da ##n## persone' => 'è stato visto da {0} persone',
+    '#Profilo ##visto## ##frequenza##' => 'Il tuo profilo {0} {1}',
+    '#in_ultimo_giorno' => 'in questa giornata',
+    '#in_ultimi_7_giorni' => 'nell\'ultima settimana',
+    '#in_ultimi_30_giorni' => 'negli ultimi 30 giorni',
+    '#Contenuto ##read## ##like## ##comments## ##frequenza##' => 'Il tuo contenuto è stato {0} {1} {2} {3}',
+    'Frequency' => 'Frequenza',
+    "Select..." => "Seleziona...",
+
 ];

@@ -132,7 +132,7 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
                 $user_id = $this->created_by;
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
         return $user_id;
     }

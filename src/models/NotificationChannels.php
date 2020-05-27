@@ -26,14 +26,14 @@ class NotificationChannels extends BaseObject
     const MANAGE_DOWN = 'down';
     
     //const
-    const CHANNEL_MAIL = 0x0001;
+    const CHANNEL_MAIL = 0x0001;            // dec. 1
     const CHANNEL_IMMEDIATE_MAIL = 0x0002; // NOT USED
-    const CHANNEL_UI = 0x0004;
-    const CHANNEL_SMS = 0x00F0;
-    const CHANNEL_READ = 0x0F00;
-    const CHANNEL_READ_DETAIL = 0x0F01;
-    const CHANNEL_FAVOURITES = 0xE290;
-    const CHANNEL_ALL = 0xFFFF;
+    const CHANNEL_UI = 0x0004;              // dec. 4
+    const CHANNEL_SMS = 0x00F0;             // dec. 240
+    const CHANNEL_READ = 0x0F00;            // dec. 3840
+    const CHANNEL_READ_DETAIL = 0x0F01;     // dec. 3841
+    const CHANNEL_FAVOURITES = 0xE290;      // dec. 58000
+    const CHANNEL_ALL = 0xFFFF;             // dec. 65535
 
     /**
      * @var AmosNotify $notifyModule
@@ -48,7 +48,7 @@ class NotificationChannels extends BaseObject
         parent::init();
         $this->notifyModule = AmosNotify::instance();
     }
-
+    
     /**
      * @param string $modelClassName
      * @param string $type

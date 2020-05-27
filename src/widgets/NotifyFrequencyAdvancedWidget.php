@@ -28,7 +28,9 @@ use yii\data\ActiveDataProvider;
  */
 class NotifyFrequencyAdvancedWidget extends Widget
 {
-    /**
+    const DEFAULT_EMAIL_FREQUENCY = 2;
+
+     /**
      * @var string $layout It's permitted to set {emailNotifyFrequency} and {smsNotifyFrequency}. Default to {emailNotifyFrequency}.
      */
     public $layout = '{generalNotifyFrequency}';
@@ -61,7 +63,7 @@ class NotifyFrequencyAdvancedWidget extends Widget
     /**
      * @var null
      */
-    private $defaultValueEmail = 2;
+    private $defaultValueEmail = self::DEFAULT_EMAIL_FREQUENCY;
 
     /**
      * @var AmosNotify $notifyModule
@@ -89,7 +91,7 @@ class NotifyFrequencyAdvancedWidget extends Widget
             $notificConf = $this->notifyModule->createModel('NotificationConf');
             $notificConf->user_id = $this->model->user_id;
             $this->notificationConf = $notificConf;
-        }
+        }        
     }
     
     /**
@@ -194,6 +196,60 @@ class NotifyFrequencyAdvancedWidget extends Widget
     public static function emailFrequencySelectorName()
     {
         return 'email_frequency_selector_name';
+    }
+    
+    /**
+     * @return string
+     */
+    public static function contattiSuggeritiEmailSelectorId()
+    {
+        return 'contatti-suggeriti-email-selector-id';
+    }
+    
+    /**
+     * @return string
+     */
+    public static function contattiSuggeritiEmailSelectorName()
+    {
+        return 'contatti_suggeriti_email_selector_name';
+    }
+    
+    /**
+     * @return string
+     */
+    /**
+     * @return string
+     */
+    public static function contenutiSuccessoEmailSelectorId()
+    {
+        return 'contenuti-successo-email-selector-id';
+    }
+    
+    /**
+     * @return string
+     */
+    public static function contenutiSuccessoEmailSelectorName()
+    {
+        return 'contenuti_successo_email_selector_name';
+    }
+    
+    /**
+     * @return string
+     */
+    /**
+     * @return string
+     */
+    public static function profiloSuccessoEmailSelectorId()
+    {
+        return 'profilo-successo-email-selector-id';
+    }
+    
+    /**
+     * @return string
+     */
+    public static function profiloSuccessoEmailSelectorName()
+    {
+        return 'profilo_successo_email_selector_name';
     }
     
     /**
@@ -310,6 +366,114 @@ class NotifyFrequencyAdvancedWidget extends Widget
         return $html;
     }
 
+    
+    /**
+     * Render the email "suggested contacts" frequency selector.
+     * @return string
+     */
+    public function renderContattiSuggeritiEmailFrequencySelector()
+    {
+        $html = Html::beginTag('div', $this->getEmailContainerOptions());
+        $widgetConf = [
+            'id' => self::contattiSuggeritiEmailSelectorId(),
+            'name' => self::contattiSuggeritiEmailSelectorName(),
+            'data' => NotificationsConfOpt::emailFrequencyValueAndLabels(false),
+            'options' => [
+                'lang' => substr(\Yii::$app->language, 0, 2),
+                'multiple' => false,
+                'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
+            ]
+        ];
+        if (!is_null($this->notificationConf)  && !$this->notificationConf->isNewRecord) {
+            $widgetConf['value'] = $this->notificationConf->contatti_suggeriti_email;
+        }else{
+            if(!empty($this->defaultValueEmail)){
+                $widgetConf ['value'] = $this->defaultValueEmail;
+            }else{
+                $widgetConf ['value'] = NotificationsConfOpt::EMAIL_DAY;
+            }
+
+        }
+
+        $html .= Select2::widget($widgetConf);
+        $html .= Html::endTag('div');
+
+        return $html;
+    }
+    
+    
+    /**
+     * Render the email "Successful Content" frequency selector.
+     * @return string
+     */
+    public function renderContenutiSuccessoEmailFrequencySelector()
+    {
+        $html = Html::beginTag('div', $this->getEmailContainerOptions());
+        $widgetConf = [
+            'id' => self::contenutiSuccessoEmailSelectorId(),
+            'name' => self::contenutiSuccessoEmailSelectorName(),
+            'data' => NotificationsConfOpt::emailFrequencyValueAndLabels(false),
+            'options' => [
+                'lang' => substr(\Yii::$app->language, 0, 2),
+                'multiple' => false,
+                'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
+            ]
+        ];
+        if (!is_null($this->notificationConf)  && !$this->notificationConf->isNewRecord) {
+            $widgetConf['value'] = $this->notificationConf->contenuti_successo_email;
+        }else{
+            if(!empty($this->defaultValueEmail)){
+                $widgetConf ['value'] = $this->defaultValueEmail;
+            }else{
+                $widgetConf ['value'] = NotificationsConfOpt::EMAIL_DAY;
+            }
+
+        }
+
+        $html .= Select2::widget($widgetConf);
+        $html .= Html::endTag('div');
+
+        return $html;
+    }
+    
+    
+    
+    /**
+     * Render the email "Successful Profile" frequency selector.
+     * @return string
+     */
+    public function renderProfiloSuccessoEmailFrequencySelector()
+    {
+        $html = Html::beginTag('div', $this->getEmailContainerOptions());
+        $widgetConf = [
+            'id' => self::profiloSuccessoEmailSelectorId(),
+            'name' => self::profiloSuccessoEmailSelectorName(),
+            'data' => NotificationsConfOpt::emailFrequencyValueAndLabels(false),
+            'options' => [
+                'lang' => substr(\Yii::$app->language, 0, 2),
+                'multiple' => false,
+                'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
+            ]
+        ];
+        if (!is_null($this->notificationConf)  && !$this->notificationConf->isNewRecord) {
+            $widgetConf['value'] = $this->notificationConf->profilo_successo_email;
+        }else{
+            if(!empty($this->defaultValueEmail)){
+                $widgetConf ['value'] = $this->defaultValueEmail;
+            }else{
+                $widgetConf ['value'] = NotificationsConfOpt::EMAIL_DAY;
+            }
+
+        }
+
+        $html .= Select2::widget($widgetConf);
+        $html .= Html::endTag('div');
+
+        return $html;
+    }
+    
+    
+    
     /**
      * Render the email notify frequency selector.
      * @return string
@@ -346,14 +510,30 @@ class NotifyFrequencyAdvancedWidget extends Widget
             }
         }
 
+        foreach ($this->notificationConf->notificationLanguagePreference as $langPref){
+            $notificationLanguagePreferences []= $langPref->language;
+        }
+
+        if(empty($this->notificationConf->notificationLanguagePreference)){
+            $notificationLanguagePreferences []= \Yii::$app->language;
+        }
+
         $htmlFrequencySelector = $this->renderEmailNotifyFrequencySelector();
+        $htmlContattiSuggeritiEmailFrequencySelector = $this->renderContattiSuggeritiEmailFrequencySelector();
+        $htmlContenutiSuccessoEmailFrequencySelector = $this->renderContenutiSuccessoEmailFrequencySelector();
+        $htmlProfiloSuccessoEmailFrequencySelector = $this->renderProfiloSuccessoEmailFrequencySelector();
         return $this->render('general_notify', [
             'widget' => $this,
             'htmlFrequencySelector' => $htmlFrequencySelector,
+            'htmlContattiSuggeritiEmailFrequencySelector' => $htmlContattiSuggeritiEmailFrequencySelector,
+            'htmlContenutiSuccessoEmailFrequencySelector' => $htmlContenutiSuccessoEmailFrequencySelector,
+            'htmlProfiloSuccessoEmailFrequencySelector' => $htmlProfiloSuccessoEmailFrequencySelector,
             'notificationConf' => $this->notificationConf,
             'notificationNetworkValues' => $notificationNetworkValues,
             'dataProviderNetwork' => $dataProviderNetwork,
-            'widgetConfData'=> $widgetConfData
+            'widgetConfData'=> $widgetConfData,
+            'notificationLanguagePreferences' => $notificationLanguagePreferences,
+            'module' => $this->notifyModule,
         ]);
     }
 }

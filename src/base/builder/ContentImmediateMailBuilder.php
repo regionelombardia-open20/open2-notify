@@ -23,9 +23,16 @@ class ContentImmediateMailBuilder extends ContentMailBuilder
     {
         $controller = \Yii::$app->controller;
         $contents_number = count($resultset);
-        $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_immediate_email_header", [
+
+        $view = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_immediate_email_header", [
             'contents_number' => $contents_number
         ]);
+
+        $ris = $this->renderView(\Yii::$app->controller->module->name, "content_immediate_email_header", [
+            'contents_number' => $contents_number,
+            'original' => $view
+        ]);
+
         return $ris;
     }
 

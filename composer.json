@@ -20,7 +20,7 @@
     "php": ">=5.4.0",
     "open20/amos-admin": "^2.0",
     "open20/amos-core": "^1.9.61",
-    "open20/amos-email-manager": "^1.1",
+    "open20/amos-email-manager": "^1.1.18",
     "open20/amos-workflow": "^1.0"
   },
   "config": {

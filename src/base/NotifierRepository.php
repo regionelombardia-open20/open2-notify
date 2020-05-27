@@ -65,7 +65,7 @@ class NotifierRepository
                 ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $result;
@@ -103,7 +103,7 @@ class NotifierRepository
                 ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $result > 0;
@@ -152,7 +152,7 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
             $allOk = false;
         }
         
@@ -208,7 +208,7 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return $allOk;
@@ -275,7 +275,7 @@ class NotifierRepository
             
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         
         return ($result > 0);

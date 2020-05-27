@@ -14,10 +14,12 @@ namespace open20\amos\notificationmanager\base\builder;
 use open20\amos\core\user\User;
 use open20\amos\core\utilities\Email;
 use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\emailmanager\AmosEmail;
 use open20\amos\notificationmanager\base\Builder;
 use open20\amos\notificationmanager\models\NotificationConf;
 use Yii;
 use yii\base\BaseObject;
+use yii\helpers\Console;
 
 /**
  * Class AMailBuilder
@@ -25,6 +27,8 @@ use yii\base\BaseObject;
  */
 abstract class AMailBuilder extends BaseObject implements Builder
 {
+    protected $isCli = null;    // settata da logOn
+
     /**
      * @var AmosNotify $notifyModule
      */
@@ -37,6 +41,20 @@ abstract class AMailBuilder extends BaseObject implements Builder
     {
         parent::init();
         $this->notifyModule = AmosNotify::instance();
+    }
+
+    protected function logOn($msg) {
+
+        if(is_null($this->isCli)) {
+            $this->isCli = (php_sapi_name() == 'cli');
+        }
+
+        if($this->isCli) {
+            Console::stdout($msg . PHP_EOL);
+        } elseif (false) {
+            print $msg.'<br />'."\n";
+        }
+
     }
 
     /**
@@ -58,6 +76,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
                     $notificationconf = $notificationConfModel::find()->andWhere(['user_id' => $id])->one();
                     $contentNotificationEnabled = $notificationconf->notify_content_pubblication;
                     $this->setUserLanguage($id);
+
                     $subject = $this->getSubject($resultset);
                     $message = $this->renderEmail($resultset, $user);
                     $email = new Email();
@@ -79,11 +98,105 @@ abstract class AMailBuilder extends BaseObject implements Builder
                 }
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
             $allOk = false;
         }
         return $allOk;
     }
+
+    /**
+     * @param array $userIds
+     * @param array $resultset
+     * @return bool
+     */
+    public function sendEmailMultipleSections( $userIds,  $resultset, $resultsetNetwork, $resultsetComments)
+    {
+        $allOk = true;
+
+//        try {
+            foreach ($userIds as $id) {
+                $user = User::findOne($id);
+                if (!is_null($user)) {
+                    $this->setUserLanguage($id);
+                    $subject = $this->getSubject($resultset);
+
+                    $message = $this->renderEmailMultipleSections($resultset, $resultsetNetwork, $resultsetComments, $user);
+
+                    $mailModule = Yii::$app->getModule("email");
+                    $mailModule->defaultLayout = 'layout_summary_notify';
+
+                    $email = new Email();
+
+                    $from = '';
+                    if (isset(Yii::$app->params['email-assistenza'])) {
+                        // Use default platform email assistance
+                        $from = Yii::$app->params['email-assistenza'];
+                    }
+                    $ok = $email->sendMail($from, [$user->email], $subject, $message);
+                    if (!$ok) {
+                        Yii::getLogger()->log("Errore invio mail da '$from' a '$user->email'", \yii\log\Logger::LEVEL_ERROR);
+                        $allOk = false;
+                    }
+                }
+            }
+//        } catch (\Exception $ex) {
+//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            $allOk = false;
+//        }
+        return $allOk;
+    }
+
+
+
+    /**
+     * @param array $userIds
+     * @param array $resultset
+     * @return bool
+     */
+    public function sendEmailUserNotify( $userIds, $resultset)
+    {
+        $allOk = true;
+        $this->logOn('AMailBuilder - inizio ');
+
+//        try {
+            foreach ($userIds as $id) {
+                $user = User::findOne($id);
+                if (!is_null($user)) {
+                    $this->setUserLanguage($id);
+                    $subject = $this->getSubject($resultset);
+
+                    $message = $this->renderEmailUserNotify($resultset, $user);
+
+                    $mailModule = Yii::$app->getModule("email");
+                    $mailModule->defaultLayout = 'layout_summary_notify';
+
+                    $email = new Email();
+
+                    $from = '';
+                    if (isset(Yii::$app->params['email-assistenza'])) {
+                        // Use default platform email assistance
+                        $from = Yii::$app->params['email-assistenza'];
+                    }
+                    $this->logOn('AMailBuilder - prima della mail ' . $user->email);
+                    //$this->logOn('AMailBuilder - prima della mail ' . $user->email . PHP_EOL . $message);//die();
+                    $ok = $email->sendMail($from, [$user->email], $subject, $message);
+                    if (!$ok) {
+                        //$this->logOn("Errore invio mail da '$from' a '$user->email'");
+                        Yii::getLogger()->log("Errore invio mail da '$from' a '$user->email'", \yii\log\Logger::LEVEL_ERROR);
+                        $allOk = false;
+                    }
+                }
+            }
+//        } catch (\Exception $ex) {
+//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            $allOk = false;
+//        }
+        return $allOk;
+    }
+
+
+
+
 
     /**
      * @param int $userId
@@ -96,5 +209,11 @@ abstract class AMailBuilder extends BaseObject implements Builder
             $lang = $module->getUserLanguage($userId);
             $module->setAppLanguage($lang);
         }
+    }
+
+    public function renderView($module = false, $view = false, $params = false) {
+        $mailManager = AmosEmail::getInstance() ?: new AmosEmail('email', Yii::$app);
+
+        return $mailManager->render($module, $view, $params);
     }
 }
