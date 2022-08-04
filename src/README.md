@@ -59,7 +59,7 @@ for reports:
 
 ### Configure contents for notification summary
 - You have to configure the model in cwh/configuration/wizard
-- If you want to personalize the views of the contents in the notifiction email summary you have to put the module in /common/config/modules-amos
+- If you want to personalize the views of the contents in the notification email summary you have to put the module in /common/config/modules-amos
 ```
  'news' => [
      'class' => 'open20\amos\news\AmosNews',

@@ -17,7 +17,6 @@ use yii\behaviors\TimestampBehavior;
 /**
  * This is the model class for table "notificationsent".
  *
- * @author -
  * @property integer $id
  * @property integer $user_id
  * @property integer $type

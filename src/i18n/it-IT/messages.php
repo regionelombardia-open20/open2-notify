@@ -72,5 +72,14 @@ return [
     '#Contenuto ##read## ##like## ##comments## ##frequenza##' => 'Il tuo contenuto è stato {0} {1} {2} {3}',
     'Frequency' => 'Frequenza',
     "Select..." => "Seleziona...",
+    '#Contact_accepted_Subject' => 'Invito accettato',
+    '#Contact_accepted_Created_by_title' => 'Contenuti creati',
+    '#Contact_accepted_Created_by_desc' => 'Un elenco dei contenuti, se presenti, creati dal contatto che potrebbero interessarti.',
+    '#Contact_accepted_Commented_by_title' => 'Commenti',
+    '#Contact_accepted_Commented_by_desc' => 'Un elenco di commenti, se presenti, postati dal contatto che potrebbero interessarti',
+    '#Contact_accepted_Liked_by_title' => 'Like',
+    '#Contact_accepted_Liked_by_desc' => 'I like, se presenti, lasciati in piattaforma dal contatto',
+    '#Contact_accepted_Connected_to_title' => 'Contatto ora in collegamento',
+    '#Contact_accepted_Connected_to_desc' => 'Elenco di contenuti e collegamenti vari suggeriti in base alle attività del contatto',
 
 ];

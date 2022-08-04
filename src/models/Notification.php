@@ -19,7 +19,6 @@ use yii\behaviors\TimestampBehavior;
 /**
  * This is the model class for table "notification".
  *
- * @author -
  * @property integer $id
  * @property integer $user_id
  * @property integer $channels

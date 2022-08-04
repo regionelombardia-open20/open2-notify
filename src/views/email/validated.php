@@ -9,12 +9,20 @@
  * @category   CategoryName
  */
 
+use open20\amos\core\helpers\Html;
+use open20\amos\core\interfaces\ModelGrammarInterface;
 use open20\amos\cwh\base\ModelContentInterface;
 use open20\amos\notificationmanager\AmosNotify;
-use open20\amos\core\helpers\Html;
- if(!empty($validator)) {
+
+if (!empty($validator)) {
     $this->params['profile'] = $validator;
 }
+
+/** @var ModelGrammarInterface $modelGrammar */
+$modelGrammar = $model->getGrammar();
+$articleSingular = $modelGrammar->getArticleSingular();
+$spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
+
 ?>
 
 <div>
@@ -22,7 +30,7 @@ use open20\amos\core\helpers\Html;
     <div style="box-sizing:border-box;color:#000000;">
         <div style="padding:5px 10px;background-color: #F2F2F2;text-align:center;">
             <h1 style="color:#297A38;font-size:1.5em;margin:0;">
-                <?= AmosNotify::t('amosnotify', '#validated_email_1') . ' ' . $model->getGrammar()->getArticleSingular() . ' ' . $model->getGrammar()->getModelSingularLabel() ?>
+                <?= AmosNotify::t('amosnotify', '#validated_email_1') . ' ' . $articleSingular . $spaceAfterArticleSingular . strtolower($modelGrammar->getModelSingularLabel()) ?>
             </h1>
         </div>
     </div>
@@ -40,7 +48,7 @@ use open20\amos\core\helpers\Html;
             </div>
         </div>
 
-       
+
         <div style="margin-top:20px; display: flex; padding: 10px;">
             <div
                 style="width: 50px; height: 50px; overflow: hidden;-webkit-border-radius: 50%; -moz-border-radius: 50%; border-radius: 50%;float: left;">

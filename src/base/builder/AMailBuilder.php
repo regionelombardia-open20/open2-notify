@@ -39,8 +39,8 @@ abstract class AMailBuilder extends BaseObject implements Builder
      */
     public function init()
     {
-        parent::init();
         $this->notifyModule = AmosNotify::instance();
+        parent::init();
     }
 
     protected function logOn($msg) {
@@ -65,7 +65,6 @@ abstract class AMailBuilder extends BaseObject implements Builder
      */
     public function sendEmail(array $userIds, array $resultset, $checkContentPubblication = true)
     {
-
         $allOk = true;
         try {
             foreach ($userIds as $id) {
@@ -99,6 +98,51 @@ abstract class AMailBuilder extends BaseObject implements Builder
             }
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            $allOk = false;
+        }
+        return $allOk;
+    }
+    
+    /**
+     * @param array $userIds
+     * @param array $resultset
+     * @param bool $checkContentPubblication
+     * @return bool
+     */
+    public function sendEmailLegacy(array $userIds, array $resultset, $checkContentPubblication = true)
+    {
+        $allOk = true;
+        try {
+            foreach ($userIds as $id) {
+                $user = User::findOne($id);
+                if (!is_null($user)) {
+                    /** @var NotificationConf $notificationConfModel */
+                    $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
+                    $notificationconf = $notificationConfModel::find()->andWhere(['user_id' => $id])->one();
+                    $contentNotificationEnabled = $notificationconf->notify_content_pubblication;
+                    $this->setUserLanguage($id);
+                    $subject = $this->getSubject($resultset);
+                    $message = $this->renderEmailLegacy($resultset, $user);
+                    $email = new Email();
+                    $from = '';
+                    if (isset(Yii::$app->params['email-assistenza'])) {
+                        // Use default platform email assistance
+                        $from = Yii::$app->params['email-assistenza'];
+                    }
+                    
+                    $ok = false;
+                    if($contentNotificationEnabled || $checkContentPubblication == false){
+                        $ok = $email->sendMail($from, [$user->email], $subject, $message);
+                    }
+                    
+                    if (!$ok) {
+                        Yii::getLogger()->log("Errore invio mail da '$from' a '$user->email'", \yii\log\Logger::LEVEL_ERROR);
+                        $allOk = false;
+                    }
+                }
+            }
+        } catch (\Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
             $allOk = false;
         }
         return $allOk;

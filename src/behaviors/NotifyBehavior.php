@@ -52,7 +52,6 @@ class NotifyBehavior extends Behavior
 
     /**
      * 
-     * @see 
      */
     public function init()
     {

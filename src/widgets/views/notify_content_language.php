@@ -1,13 +1,4 @@
 <?php
-
-/**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */
 /**
  * @var $defaultLanguage string
  * @var $widget \open20\amos\notificationmanager\widgets\NotifyContentLanguageWidget

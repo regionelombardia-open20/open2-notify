@@ -5,17 +5,22 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
+ * @package    open20\amos\notificationmanager\widgets\views
  * @category   CategoryName
  */
-/**
- * @var $widget \open20\amos\notificationmanager\widgets\NotifyFrequencyAdvancedWidget
- * @var $notificationConf \open20\amos\notificationmanager\models\NotificationConf
- * @var $module AmosNotify
- */
 
+use open20\amos\admin\models\UserProfile;
 use yii\helpers\Html;
 use open20\amos\notificationmanager\AmosNotify;
+
+/**
+ * @var \open20\amos\notificationmanager\widgets\NotifyFrequencyAdvancedWidget $widget
+ * @var \open20\amos\notificationmanager\models\NotificationConf $notificationConf
+ * @var \open20\amos\notificationmanager\AmosNotify $module
+ */
+
+/** @var UserProfile $widgetModel */
+$widgetModel = $widget->getModel();
 
 ?>
 <?php
@@ -74,13 +79,22 @@ $this->registerJs($js);
     <?php } ?>
     <div class="form-group col-xs-12">
         <div class="checkbox">
-            <?php echo \open20\amos\core\helpers\Html::activeCheckbox($widget->model, 'notify_from_editorial_staff', [
+            <?php echo \open20\amos\core\helpers\Html::activeCheckbox($widgetModel, 'notify_from_editorial_staff', [
                 'name' => 'notify_from_editorial_staff',
                 'id' => 'notify_from_editorial_staff-1',
                 'onchange' => "if(!$(this).is(':checked')){ $('#notify-uncheck').modal('show'); }"
             ]) ?>
         </div>
     </div>
+    <?php if (Yii::$app->authManager->checkAccess($widgetModel->user_id, 'MANAGE_REFEREE_CATEGORIES_TICKET_NOTIFICATIONS')): ?>
+        <div class="form-group col-xs-12">
+            <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere notifiche relative ai nuovi ticket nel plugin assistenza?') ?></label>
+            <?= Html::radioList('notify_ticket_faq_referee', $notificationConf->notify_ticket_faq_referee, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
+                    'id' => 'notify-ticket-faq-referee',
+                ]
+            ) ?>
+        </div>
+    <?php endif; ?>
     <div class="form-group col-xs-12">
         <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti di avvenuta pubblicazione contenuto?') ?></label>
         <?= Html::radioList('notify_content_pubblication', $notificationConf->notify_content_pubblication, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
@@ -157,7 +171,6 @@ $this->registerJs($js);
         <?= $htmlProfiloSuccessoEmailFrequencySelector ?>
     </div>
 
-
     <?php
     if (!empty($dataProviderNetwork)) {
         echo "<p>" . AmosNotify::t('amosnotify',
@@ -182,7 +195,7 @@ $this->registerJs($js);
                     'attribute' => 'name',
                     'format' => 'html',
                     'value' => function ($model) {
-                        /** @var Community $model */
+                        /** @var \open20\amos\community\models\Community $model */
                         return Html::a($model->name, ['/community/community/view', 'id' => $model->id], [
                             'title' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Apri il profilo della community {community_name}', ['community_name' => $model->name])
                         ]);
@@ -192,7 +205,7 @@ $this->registerJs($js);
                     'attribute' => 'communityType',
                     'format' => 'html',
                     'value' => function ($model) {
-                        /** @var Community $model */
+                        /** @var \open20\amos\community\models\Community $model */
                         if (!is_null($model->community_type_id)) {
                             return \open20\amos\community\AmosCommunity::t('amoscommunity', $model->communityType->name);
                         } else {
@@ -220,7 +233,7 @@ $this->registerJs($js);
 //                    'attribute' => 'created_by',
 //                    'format' => 'html',
 //                    'value' => function($model){
-//                        /** @var Community $model */
+//                        /** @var \open20\amos\community\models\Community $model */
 //                        $name = '-';
 //                        if(!is_null($model->created_by)) {
 //                            $creator = \open20\amos\core\user\User::findOne($model->created_by);
@@ -241,8 +254,8 @@ $this->registerJs($js);
 //                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
 //                    ],
 //                    'value' => function($model)use ($widget){
-//                        /** @var Community $model */
-//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' => $widget->model->user_id, 'community_id' => $model->id]);
+//                        /** @var \open20\amos\community\models\Community $model */
+//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' => $widgetModel->user_id, 'community_id' => $model->id]);
 //                        return  $mmrow->status;
 //                    }
 //                ],
@@ -256,8 +269,8 @@ $this->registerJs($js);
 //                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
 //                    ],
 //                    'value' => function($model) use ($widget){
-//                        /** @var Community $model */
-//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' =>  $widget->model->user_id, 'community_id' => $model->id]);
+//                        /** @var \open20\amos\community\models\Community $model */
+//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' =>  $widgetModel->user_id, 'community_id' => $model->id]);
 //                        return  $mmrow->role;
 //                    }
 //                ],
@@ -266,5 +279,3 @@ $this->registerJs($js);
     }
     ?>
 </div>
-
-

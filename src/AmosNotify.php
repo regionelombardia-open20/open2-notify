@@ -12,7 +12,6 @@
 namespace open20\amos\notificationmanager;
 
 /**
- *
  * Plugin per la gestione delle notifiche.
  *
  * Si basa su una Behavior (NotifyBehavior) che aggiunge funzionalità al modello con gli Events:
@@ -67,7 +66,6 @@ use yii\log\Logger;
  */
 class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, NotifyWidget
 {
-
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
@@ -79,12 +77,11 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         'open20\amos\sondaggi\models\Sondaggi',
     ];
 
-    /** @var bool  */
+    /** @var bool */
     public $enableNotificationContentLanguage = false;
     public $sleepingUserDayLimit = 30; // If the user is inactive for those days he is sleeping
     public $contentsLimit = 2;         // max items foreach content in email to userNotification
     public $usersLimit = 5;            // max users in email to userNotification (es max contatti, max visits)
-
 
     /**
      * @var null |string
@@ -105,8 +102,14 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      */
     public $viewPathEmailNotifyValidated = [];
 
+    /**
+     *
+     * @var boolean $enableLegacyNotify
+     */
+    public $enableLegacyNotify = false;
 
     private static $notifyworkflowlistener;
+    private static $registerEvent        = false;
 
     /**
      * @inheritdoc
@@ -149,11 +152,13 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         if ($app instanceof \yii\console\Application) {
             $this->controllerNamespace = 'open20\amos\notificationmanager\commands';
         } else {
-            Event::on(
-                Record::className(),
-                SimpleWorkflowBehavior::EVENT_AFTER_CHANGE_STATUS,
-                [self::$notifyworkflowlistener, 'afterChangeStatus']
-            );
+            if (self::$registerEvent == false) {
+                self::$registerEvent = true;
+                Event::on(
+                    Record::className(), SimpleWorkflowBehavior::EVENT_AFTER_CHANGE_STATUS,
+                    [self::$notifyworkflowlistener, 'afterChangeStatus']
+                );
+            }
         }
     }
 
@@ -164,13 +169,20 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     {
         return [
             'ChangeStatusEmail' => __NAMESPACE__ . '\\' . 'models\ChangeStatusEmail',
+            'Newsletter' => __NAMESPACE__ . '\\' . 'models\Newsletter',
+            'NewsletterContents' => __NAMESPACE__ . '\\' . 'models\NewsletterContents',
+            'NewsletterContentsConf' => __NAMESPACE__ . '\\' . 'models\NewsletterContentsConf',
+            'NewsletterSearch' => __NAMESPACE__ . '\\' . 'models\search\NewsletterSearch',
             'Notification' => __NAMESPACE__ . '\\' . 'models\Notification',
             'NotificationChannels' => __NAMESPACE__ . '\\' . 'models\NotificationChannels',
             'NotificationConf' => __NAMESPACE__ . '\\' . 'models\NotificationConf',
-            'NotificationsConfOpt' => __NAMESPACE__ . '\\' . 'models\NotificationsConfOpt',
             'NotificationconfNetwork' => __NAMESPACE__ . '\\' . 'models\NotificationconfNetwork',
-            'NotificationsRead' => __NAMESPACE__ . '\\' . 'models\NotificationsRead',
+            'NotificationContentLanguage' => __NAMESPACE__ . '\\' . 'models\NotificationContentLanguage',
+            'NotificationLanguagePreferences' => __NAMESPACE__ . '\\' . 'models\NotificationLanguagePreferences',
+            'NotificationsConfOpt' => __NAMESPACE__ . '\\' . 'models\NotificationsConfOpt',
             'NotificationSendEmail' => __NAMESPACE__ . '\\' . 'models\NotificationSendEmail',
+            'NotificationsRead' => __NAMESPACE__ . '\\' . 'models\NotificationsRead',
+            'NotificationsSent' => __NAMESPACE__ . '\\' . 'models\NotificationsSent',
         ];
     }
 
@@ -237,7 +249,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
-        
+
         return $result;
     }
 
@@ -255,7 +267,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
-        
+
         return $result;
     }
 
@@ -275,7 +287,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
-        
+
         return $retval;
     }
 
@@ -294,7 +306,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
-        
+
         return $ok;
     }
 
@@ -313,7 +325,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
-        
+
         return $ok;
     }
 
@@ -326,8 +338,8 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     {
         $result = false;
         try {
-            //$repository = new NotifierRepository();
-            //$result = $repository->isFavorite($model, $uid);
+            $repository = new NotifierRepository();
+            $result = $repository->isFavorite($model, $uid);
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
@@ -343,7 +355,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @return bool
      */
     public function saveNotificationConf($userId, $emailFrequency = 0, $smsFrequency = 0, $params = [])
-    {	
+    {
         $notifyUtility = new NotifyUtility();
         return $notifyUtility->saveNotificationConf($userId, $emailFrequency, $smsFrequency, $params);
     }
@@ -359,11 +371,9 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         return $notifyUtility->setDefaultNotificationsConfs($userId);
     }
 
-    public function contactAccepted($user, $invitedUser) {
-
+    public function contactAccepted($user, $invitedUser)
+    {
         $notifyUtility = new NotifyUtility();
         $notifyUtility->contactAccepted($user, $invitedUser);
-
     }
-
 }

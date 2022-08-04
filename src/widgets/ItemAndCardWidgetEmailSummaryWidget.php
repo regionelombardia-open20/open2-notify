@@ -1,14 +1,9 @@
 <?php
-
 /**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */
-/**
+ * Created by PhpStorm.
+ * User: michele.lafrancesca
+ * Date: 28/08/2019
+ * Time: 16:43
  */
 
 namespace open20\amos\notificationmanager\widgets;
@@ -31,7 +26,7 @@ class ItemAndCardWidgetEmailSummaryWidget extends Widget
             'model' => $this->model,
             'layout' => '@vendor/open20/amos-notify/src/views/email/item_and_card_header_widget_mail.php',
             'publicationDateNotPresent' => true,
-            'showPrevalentPartnershipAndTargets' => true,
+            'showPrevalentPartnershipAndTargets' => false,
             'absoluteUrlAvatar' => true,
         ]);
     }

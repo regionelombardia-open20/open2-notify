@@ -9,12 +9,20 @@
  * @category   CategoryName
  */
 
+use open20\amos\core\interfaces\ModelGrammarInterface;
 use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\core\helpers\Html;
 use open20\amos\cwh\base\ModelContentInterface;
+
 if(!empty($profile)) {
     $this->params['profile'] = $profile;
 }
+
+/** @var ModelGrammarInterface $modelGrammar */
+$modelGrammar = $model->getGrammar();
+$articleSingular = $modelGrammar->getArticleSingular();
+$spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
+
 ?>
 
 <div>
@@ -22,10 +30,9 @@ if(!empty($profile)) {
     <div style="box-sizing:border-box;color:#000000;">
         <div style="padding:5px 10px;background-color: #F2F2F2;text-align:center;">
             <h1 style="color:#297A38;font-size:1.5em;margin:0;">
-                <?= AmosNotify::t('amosnotify', '#validation_request_email_1') . ' ' . $model->getGrammar()->getArticleSingular() . ' ' . $model->getGrammar()->getModelSingularLabel() ?>
+                <?= AmosNotify::t('amosnotify', '#validation_request_email_1') . ' ' . $articleSingular . $spaceAfterArticleSingular . strtolower($modelGrammar->getModelSingularLabel()) ?>
             </h1>
         </div>
-
     </div>
     <div style="border:1px solid #cccccc;padding:10px;margin-bottom: 10px;background-color: #ffffff;margin-top: 20px;">
         <div>
