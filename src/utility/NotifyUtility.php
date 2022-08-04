@@ -219,6 +219,7 @@ class NotifyUtility extends BaseObject
             'notifications_enabled' => 1,
             'notify_content_pubblication' => 1,
             'notify_comments' => 1,
+            'notify_ticket_faq_referee' => 1,
             'contatto_accettato_flag' => 1,
             'periodo_inattivita_flag' => 1,
             'contatti_suggeriti_email' => $emailFrequency,
