@@ -199,6 +199,7 @@ $this->registerJs($js);
                 'logo_id' => [
                     'headerOptions' => [
                         'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
+                        'width' => '100'
                     ],
                     'contentOptions' => [
                         'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
