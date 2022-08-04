@@ -69,7 +69,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
         try {
             foreach ($userIds as $id) {
                 $user = User::findOne($id);
-                if (!is_null($user)) {
+                if (!is_null($user) && $user->status == User::STATUS_ACTIVE) {
                     /** @var NotificationConf $notificationConfModel */
                     $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
                     $notificationconf = $notificationConfModel::find()->andWhere(['user_id' => $id])->one();
