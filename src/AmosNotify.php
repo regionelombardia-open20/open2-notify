@@ -156,6 +156,23 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $controllerNamespace = 'open20\amos\notificationmanager\controllers';
 
     /**
+     * If set to true it enables the sending of segmented notifications
+     * @var bool  $enableSegmentedSend
+     */
+    public $enableSegmentedSend = false;
+
+    /**
+     * Indicates for which types of notifications segmentation is used
+     * @var array $segmentationEnabledFor
+     */
+    public $segmentationEnabledFor = [2];
+
+    /**
+     * Set the number of emails for each segment
+     * @var int $baseOffset
+     */
+    public $segmentationOffset = 3000;
+    /**
      * @inheritdoc
      */
     public function __construct($id, $parent = null, array $config = [])

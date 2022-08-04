@@ -45,7 +45,7 @@ $notifyModule = AmosNotify::instance();
                     <tr>
                         <td>
                             <?php
-                            $url = $model->getModelImageUrl('square_large', true, '/img/img_default.jpg', false, true);
+                            $url = $model->getModelImageUrl('square_large', false, '/img/img_default.jpg', false, true);
                             if ($model instanceof ContentModelInterface) {
                                 $imageAlt = $model->getTitle();
                             } else {
@@ -82,7 +82,7 @@ $notifyModule = AmosNotify::instance();
                                 </td>
 	                            <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?= $modelAbsoluteFullViewUrl ?>"
                                  style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
-			                            <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= AmosNotify::t('amosnotify', '#content_image'); ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+			                            <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= AmosNotify::t('amosnotify', '#read'); ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                                     </a>
                                 </td>
                             </tr>

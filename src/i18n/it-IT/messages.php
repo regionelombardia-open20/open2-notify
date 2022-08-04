@@ -146,4 +146,6 @@ return [
     '#in_ultimo_giorno' => 'in questa giornata',
     '#in_ultimi_7_giorni' => 'nell\'ultima settimana',
     '#in_ultimi_30_giorni' => 'negli ultimi 30 giorni',
+    'Vuoi ricevere notifiche dalla piattaforma {NomePiattaforma}?' => 'Vuoi ricevere notifiche dalla piattaforma {NomePiattaforma}?',
+    'Indica la frequenza con cui ricevere email di riepilogo dalla piattaforma {NomePiattaforma}' => 'Indica la frequenza con cui ricevere email di riepilogo dalla piattaforma {NomePiattaforma}'
 ];

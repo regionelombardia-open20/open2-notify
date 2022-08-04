@@ -57,7 +57,7 @@ foreach ($arrayModels as $model) {
                 $url = '/img/img_default.jpg';
                 $image=$model->getModelImage();
                 if (!is_null($image)) {
-                    $url = $image->getUrl('square_large', false, true);
+                    $url = $image->getWebUrl('square_large', false, true);
                 }
                 $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
             ?>

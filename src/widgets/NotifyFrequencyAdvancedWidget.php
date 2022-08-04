@@ -311,6 +311,7 @@ class NotifyFrequencyAdvancedWidget extends Widget
         /** @var NotificationsConfOpt $notificationConfOpt */
         $notificationConfOpt = $this->notifyModule->createModel('NotificationsConfOpt');
         $html = Html::beginTag('div', $this->getEmailContainerOptions());
+        $html .= Html::tag('label',AmosNotify::t('amosnotify','Indica la frequenza con cui ricevere email di riepilogo dalla piattaforma {NomePiattaforma}', ['NomePiattaforma' => \Yii::$app->name]),['class'=>'control-label']);
         $widgetConf = [
             'id' => self::emailFrequencySelectorId(),
             'name' => self::emailFrequencySelectorName(),

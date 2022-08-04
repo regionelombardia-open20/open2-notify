@@ -32,12 +32,12 @@ use yii\web\Application;
  */
 class NotifyBehavior extends Behavior
 {
-    public static $EVENT_METHOD_EVALUATE      = 'evaluatenotify';
-    public static $EVENT_METHOD_READED        = 'notifyreaded';
+    public static $EVENT_METHOD_EVALUATE = 'evaluatenotify';
+    public static $EVENT_METHOD_READED = 'notifyreaded';
     public static $EVENT_METHOD_READED_DETAIL = 'notifyreadeddetail';
-    private $events                           = [];
-    private $channels                         = [];
-    private $conditions                       = [];
+    private $events = [];
+    private $channels = [];
+    private $conditions = [];
     public $saveNotificationSendEmail;
     public $modelOldAttributes;
 
@@ -52,7 +52,8 @@ class NotifyBehavior extends Behavior
     public $notifyModule = null;
 
     /**
-     * 
+     *
+     * @see
      */
     public function init()
     {
@@ -237,7 +238,7 @@ class NotifyBehavior extends Behavior
     public function saveOldAttributes($event)
     {
         try {
-            $model                    = $event->sender;
+            $model = $event->sender;
             $this->modelOldAttributes = $model->attributes;
         } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
@@ -254,8 +255,16 @@ class NotifyBehavior extends Behavior
         //it's called for every update
         try {
             $validatori = false;
+            $destinatari = null;
+            $destinatarioCommunity = null;
             if (property_exists($model, 'validatori')) {
                 $validatori = $model->validatori;
+            }
+            if (property_exists($model, 'destinatari')) {
+                $destinatari = $model->destinatari;
+                if (count($destinatari > 0)) {
+                    $destinatarioCommunity = $destinatari[0];
+                }
             }
 
             if ($this->notifyModule != null) {
@@ -269,13 +278,13 @@ class NotifyBehavior extends Behavior
 //                    $notify = $this->notifyModule->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
 //                    'channels' => $channel, 'class_name' => get_class($model) ]);
                     $notify = $this->notifyModule->createModel('Notification')->find()
-                            ->leftJoin('notificationread', 'notificationread.notification_id = notification.id')
-                            ->andWhere([
-                                'content_id' => $model->getAttributes()[$model->primaryKey()[0]],
-                                'channels' => $channel,
-                                'class_name' => get_class($model)
-                            ])
-                            ->andWhere(['notificationread.notification_id' => null])->one();
+                        ->leftJoin('notificationread', 'notificationread.notification_id = notification.id')
+                        ->andWhere([
+                            'content_id' => $model->getAttributes()[$model->primaryKey()[0]],
+                            'channels' => $channel,
+                            'class_name' => get_class($model)
+                        ])
+                        ->andWhere(['notificationread.notification_id' => null])->one();
 
 
                     if (empty($notify)) {
@@ -289,10 +298,10 @@ class NotifyBehavior extends Behavior
 
                             //create notification for a network
                             $notify->content_id = $model->getAttributes()[$model->primaryKey()[0]];
-                            $notify->channels   = $channel;
+                            $notify->channels = $channel;
                             $notify->class_name = get_class($model);
 
-                            if ($validatori) {
+                            if ($validatori || $destinatarioCommunity) {
                                 if (is_array($validatori)) {
                                     $validatori = reset($validatori);
                                 }
@@ -302,7 +311,16 @@ class NotifyBehavior extends Behavior
                                         $modelsClassname = ModelsClassname::find()->andWhere(['module' => $exploded[0]])->one();
                                         if ($modelsClassname) {
                                             $notify->models_classname_id = $modelsClassname->id;
-                                            $notify->record_id           = $exploded[1];
+                                            $notify->record_id = $exploded[1];
+                                        }
+                                    }
+                                } else if (strpos($destinatarioCommunity, 'user') === false) {
+                                    $exploded = explode('-', $destinatarioCommunity);
+                                    if (count($exploded) == 2) {
+                                        $modelsClassname = ModelsClassname::find()->andWhere(['module' => $exploded[0]])->one();
+                                        if ($modelsClassname) {
+                                            $notify->models_classname_id = $modelsClassname->id;
+                                            $notify->record_id = $exploded[1];
                                         }
                                     }
                                 }
@@ -324,7 +342,8 @@ class NotifyBehavior extends Behavior
                     }
                 }
             }
-        } catch (Exception $bex) {
+        } catch
+        (Exception $bex) {
             Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
@@ -341,9 +360,9 @@ class NotifyBehavior extends Behavior
             return true;
         }
 
-        foreach ((Array) $this->modelOldAttributes as $oldAttribute => $value) {
+        foreach ((Array)$this->modelOldAttributes as $oldAttribute => $value) {
             if (!in_array($oldAttribute,
-                    ['created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by'])) {
+                ['created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by'])) {
                 if ($model->attributes[$oldAttribute] != $value) {
                     $modelIsChanged = true;
                 }
@@ -373,9 +392,9 @@ class NotifyBehavior extends Behavior
                     if ($notify_load) {
                         $notify_read = $notify_load;
                     }
-                    $notify_read->user_id         = Yii::$app->user->id;
+                    $notify_read->user_id = Yii::$app->user->id;
                     $notify_read->notification_id = $notify->id;
-                    $notify_read->updated_at      = null;
+                    $notify_read->updated_at = null;
                     $notify_read->save();
                 }
             }
@@ -433,14 +452,14 @@ class NotifyBehavior extends Behavior
         if (\Yii::$app instanceof Yii\console\Application) {
             $isPostCorrect = true;
         } else {
-            $post          = \Yii::$app->request->post('saveNotificationSendEmail');
+            $post = \Yii::$app->request->post('saveNotificationSendEmail');
             $isPostCorrect = ($post && $post == 1);
-            $isSetPost     = isset($post);
+            $isSetPost = isset($post);
         }
 
         // On configuration we define models can notified only by post parameter.
         // For this class, if isPostCorrect is false, exit... do nothing
-        $notificationOnlyOnPostParameter = in_array($modelClassName,$this->notifyModule->disableDefaultBehaviorClasses);
+        $notificationOnlyOnPostParameter = in_array($modelClassName, $this->notifyModule->disableDefaultBehaviorClasses);
         if ($notificationOnlyOnPostParameter && !$isPostCorrect) {
             return true;
         }
@@ -450,15 +469,15 @@ class NotifyBehavior extends Behavior
             if ($channel == NotificationChannels::CHANNEL_MAIL) {
                 /** @var NotificationSendEmail $notificationSendEmailModel */
                 $notificationSendEmailModel = $this->notifyModule->createModel('NotificationSendEmail');
-                $notificationSendEmail      = $notificationSendEmailModel::find()->andWhere([
-                        'content_id' => $modelId,
-                        'classname' => $modelClassName
-                    ])->one();
+                $notificationSendEmail = $notificationSendEmailModel::find()->andWhere([
+                    'content_id' => $modelId,
+                    'classname' => $modelClassName
+                ])->one();
                 if (is_null($notificationSendEmail)) {
                     /** @var NotificationSendEmail $notificationSendEmail */
-                    $notificationSendEmail             = $this->notifyModule->createModel('NotificationSendEmail');
+                    $notificationSendEmail = $this->notifyModule->createModel('NotificationSendEmail');
                     $notificationSendEmail->content_id = $modelId;
-                    $notificationSendEmail->classname  = $modelClassName;
+                    $notificationSendEmail->classname = $modelClassName;
                 }
 
                 $ok = $notificationSendEmail->save(false);
@@ -481,17 +500,17 @@ class NotifyBehavior extends Behavior
                     $notify_content_language = \Yii::$app->request->post('notify_content_language');
                 }
                 $modelsclassname = ModelsClassname::find()
-                        ->andWhere(['classname' => $notify->class_name])->one();
+                    ->andWhere(['classname' => $notify->class_name])->one();
                 if ($modelsclassname) {
                     if (!empty($notify_content_language)) {
                         $notificationContentLanguage = NotificationContentLanguage::find()
-                                ->andWhere(['models_classname_id' => $modelsclassname->id])
-                                ->andWhere(['record_id' => $notify->content_id])->one();
+                            ->andWhere(['models_classname_id' => $modelsclassname->id])
+                            ->andWhere(['record_id' => $notify->content_id])->one();
 
                         if (empty($notificationContentLanguage)) {
-                            $notificationContentLanguage                      = new NotificationContentLanguage();
+                            $notificationContentLanguage = new NotificationContentLanguage();
                             $notificationContentLanguage->models_classname_id = $modelsclassname->id;
-                            $notificationContentLanguage->record_id           = $notify->content_id;
+                            $notificationContentLanguage->record_id = $notify->content_id;
                         }
                         $notificationContentLanguage->language = $notify_content_language;
                         $notificationContentLanguage->save(false);
