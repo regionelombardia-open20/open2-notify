@@ -176,7 +176,7 @@ class NotifierController extends Controller
         try {
             $module = AmosNotify::getInstance();
             /** @var AmosAdmin $adminModule */
-            $adminModule = Yii::$app->getModule('admin');
+            $adminModule = Yii::$app->getModule(AmosAdmin::getModuleName());
 
             $query = new Query();
             $query->from(UserProfile::tableName());
