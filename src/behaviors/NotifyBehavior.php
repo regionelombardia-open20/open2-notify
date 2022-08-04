@@ -360,12 +360,14 @@ class NotifyBehavior extends Behavior
         // questo controllo è pilotato da  un modale di conferma in nel transitionwidget di amos-workflow
         // se è settato il parametro in post ed è true vuoldire che sono stati modificati dei campi, se zero nn è stato modificato niente
         // se nn c'è il parametro in post, viene fatto il controllo lato server
-        $createUpdateNotification = \Yii::$app->request->post('createUpdateNotification');
-        if (!is_null($createUpdateNotification)) {
-            if($createUpdateNotification){
-                return true;
+        if(!\Yii::$app instanceof \yii\console\Application) {
+            $createUpdateNotification = \Yii::$app->request->post('createUpdateNotification');
+            if (!is_null($createUpdateNotification)) {
+                if ($createUpdateNotification) {
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
 
 
