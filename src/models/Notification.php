@@ -33,7 +33,7 @@ use yii\db\ActiveRecord;
  *
  * @package open20\amos\notificationmanager\models
  */
-class Notification extends ActiveRecord
+class Notification extends \open20\amos\core\record\Record
 {
     /**
      * @inheritdoc
@@ -75,13 +75,12 @@ class Notification extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function behaviors()
-    {
-        return array_merge(parent::behaviors(), [
+    public function behaviors() {
+        return [
             'class' => TimestampBehavior::className(),
-        ]);
+        ];
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */

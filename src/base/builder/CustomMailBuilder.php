@@ -87,6 +87,7 @@ class CustomMailBuilder extends AMailBuilder
 
     public function init()
     {
+        parent::init();
         if(!is_null($this->emailConf)){
             $email = $this->emailConf;
             if($email->template){

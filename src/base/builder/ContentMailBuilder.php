@@ -74,6 +74,10 @@ class ContentMailBuilder extends AMailBuilder
         $class_content = '';
         try {
             $mail .= $this->renderContentHeaderLegacy($resultset);
+            /**
+             * $alreadyAdded array used to not send the same content in the same mail
+             */
+            $alreadyAdded = [];
             foreach ($resultset as $notify) {
                 /** @var Notification $notify */
                 $cls_name = $notify->class_name;
@@ -81,22 +85,24 @@ class ContentMailBuilder extends AMailBuilder
                 
                 /** @var NotifyRecord|ModelLabelsInterface $model */
                 $model = $cls_name::find()->andWhere(['id' => $notify->content_id])->one();
-                if (!is_null($model) && $model->sendCommunication()) {
-//                    if (strcmp($class_content, $cls_name)) {
-//                        $mail .= $this->renderContentTitleLegacy($model);
-//                        $class_content = $notify->class_name;
-//
-//                        if($modelClassname) {
-//                            $module = \Yii::$app->getModule($modelClassname->module);
-//                            if (!empty($module->viewPathEmailContentSubtitle[$cls_name])) {
-//                                $mail .= $this->renderPersonalizedContentSubtitleLegacy($model, $user, $module->viewPathEmailContentSubtitle[$cls_name]);
-//                            }
-//                        }
-//                    }
+                if (!in_array($notify->class_name . '-' . $notify->content_id, $alreadyAdded) && !is_null($model) && $model->sendCommunication()) {
+                    $alreadyAdded[] = $notify->class_name . '-' . $notify->content_id;
+                    if (strcmp($class_content, $cls_name)) {
+                        $mail .= $this->renderContentTitleLegacy($model);
+                        $class_content = $notify->class_name;
+
+                        if($modelClassname) {
+                            $module = \Yii::$app->getModule($modelClassname->module);
+                            if (!empty($module->viewPathEmailContentSubtitle[$cls_name])) {
+                                $mail .= $this->renderPersonalizedContentSubtitleLegacy($model, $user, $module->viewPathEmailContentSubtitle[$cls_name]);
+                            }
+                        }
+                    }
                     // render list of content of default
                     $mail .= $this->renderContentLegacy($model, $user);
                 }
             }
+            unset($alreadyAdded);
             $mail .= $this->renderContentFooterLegacy($resultset, $user);
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
@@ -173,7 +179,7 @@ class ContentMailBuilder extends AMailBuilder
     protected function renderContentTitleLegacy(ModelLabelsInterface $model)
     {
         $controller = \Yii::$app->controller;
-        $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_title", [
+        $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/legacy_content_title", [
             'title' => $model->getGrammar()->getModelLabel(),
         ]);
         return $ris;
@@ -263,7 +269,7 @@ class ContentMailBuilder extends AMailBuilder
             $mail .= $this->renderSectionWithScope($resultSetNetwork, $resultSetComments, $user);
             
             $mail .= $this->renderContentFooter($resultSetNormal, $user);
-        } catch (\Exception $ex) {print_r($ex->getMessage());print_r('#######');print_r($ex->getTraceAsString());die('sdfaòaa');
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         
@@ -282,13 +288,20 @@ class ContentMailBuilder extends AMailBuilder
         $class_content = '';
         $orderModels = [];
         $arrayModelsToNotifiy = [];
+
+        /**
+         * $alreadyAdded array used to not send the same content in the same mail
+         */
+        $alreadyAdded = [];
         foreach ($resultSetNormal as $notify) {
             /** @var Notification $notify */
             $cls_name = $notify->class_name;
             /** @var NotifyRecord|ModelLabelsInterface $model */
             $model = $cls_name::find()->andWhere(['id' => $notify->content_id])->one();
-            
-            if (!is_null($model) && $model->sendCommunication()) {
+
+
+            if (!in_array($notify->class_name . '-' . $notify->content_id, $alreadyAdded) && !is_null($model) && $model->sendCommunication()) {
+                $alreadyAdded[] = $notify->class_name . '-' . $notify->content_id;
                 $arrayModelsToNotifiy[$notify->class_name][] = $model;
                 
                 if (strcmp($class_content, $notify->class_name)) {
@@ -299,6 +312,7 @@ class ContentMailBuilder extends AMailBuilder
                 }
             }
         }
+        unset($alreadyAdded);
         
         // render the contents using the order of the models defined in configuration
         foreach ($orderModels as $classname) {
@@ -351,13 +365,19 @@ class ContentMailBuilder extends AMailBuilder
         $orderNetworks = [];
         
         if (isset($resultSetNetwork) and count($resultSetNetwork)) {
+            /**
+             * $alreadyAdded array used to not send the same content in the same mail
+             */
+            $alreadyAdded = [];
+
             // prepare the array of contents to render for the view
             foreach ($resultSetNetwork as $notify) {
                 /** @var Notification $notify */
                 $cls_name = $notify->class_name;
                 /** @var NotifyRecord|ModelLabelsInterface $model */
                 $model = $cls_name::find()->andWhere(['id' => $notify->content_id])->one();
-                if (!is_null($model) && $model->sendCommunication()) {
+                if (!in_array($notify->class_name . '-' . $notify->content_id, $alreadyAdded) && !is_null($model) && $model->sendCommunication()) {
+                    $alreadyAdded[] = $notify->class_name . '-' . $notify->content_id;
                     $arrayModelsToNotifiyNetwork[$notify->models_classname_id][$notify->record_id][$notify->class_name][] = $model;
                     if (strcmp($class_content, $notify->class_name)) {
                         if (!in_array($notify->class_name, $orderModels)) {
@@ -381,6 +401,7 @@ class ContentMailBuilder extends AMailBuilder
                     }
                 }
             } // foreach
+            unset($alreadyAdded);
         } // if $resultSetNetwork
         
         if (isset($resultSetComments) and count($resultSetComments)) {
@@ -709,6 +730,24 @@ class ContentMailBuilder extends AMailBuilder
     {
         Console::stdout($user->userProfile->id . PHP_EOL);
         
+        $controller = \Yii::$app->controller;
+        $ris = $controller->renderPartial($viewPath, [
+            'model' => $model,
+            'profile' => $user->userProfile,
+        ]);
+        return $ris;
+    }
+
+    /**
+     * @param $model
+     * @param User $user
+     * @param $viewPath
+     * @return string
+     */
+    protected function renderPersonalizedContentSubtitleLegacy($model, $user, $viewPath)
+    {
+        Console::stdout($user->userProfile->id. PHP_EOL);
+
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [
             'model' => $model,

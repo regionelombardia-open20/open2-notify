@@ -1,5 +1,7 @@
 <?php
+
 namespace open20\amos\notificationmanager\listeners;
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -29,15 +31,13 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
      */
     public function afterChangeStatus($event)
     {
-        try{
+        try {
             /** @var Record $owner */
             $owner = $event->sender->owner;
-            if (!empty($owner))
-            {
-                if($owner instanceof  NotifyRecordInterface) 
-                {
+            if (!empty($owner)) {
+                if ($owner instanceof NotifyRecordInterface) {
                     if ($owner->sendNotification()) {
-                        if(empty($owner->mailStatuses)) {
+                        if (empty($owner->mailStatuses)) {
                             $this->sendValidatorsEmail($event, $owner);
                         } else {
                             $this->setCustomEmails($event, $owner);
@@ -45,9 +45,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
                     }
                 }
             }
-        }
-        catch(Exception $ex)
-        {
+        } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         return true;
@@ -59,7 +57,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
      * @param $event
      * @param $model
      */
-    public function sendValidatorsEmail($event,$model)
+    public function sendValidatorsEmail($event, $model)
     {
         try {
             $module = \Yii::$app->getModule('notify');
@@ -69,14 +67,13 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
                 if (!strcmp($model->getToValidateStatus(), $event->getEndStatus()->getId())) {
                     $factory = new BuilderFactory();
                     $builder = $factory->create(BuilderFactory::VALIDATORS_MAIL_BUILDER);
-                    if ($model instanceof Record) 
-                    {
+                    if ($model instanceof Record) {
                         //send email to VALIDATORS
                         $userIds = $model->getValidatorUsersId();
 
                         // send email to FACILITATOR and FACILITATOR_EXTERNAL
                         $user = User::findOne($model->created_by);
-                        if(!is_null($user)) {
+                        if (!is_null($user)) {
                             /**var $userprofile UserProfile */
                             $userprofile = $user->getUserProfile()->one();
                             if (!is_null($userprofile)) {
@@ -91,31 +88,52 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
 
                             }
                         }
-
-                        $builder->sendEmail($userIds,[$model]);
+                        $userIds = array_unique($userIds);
+                        $builder->sendEmail($userIds, [$model]);
                     }
-                }else{
-                    if (!strcmp($model->getValidatedStatus(), $event->getEndStatus()->getId())) 
-                    {
-                        $validator_id = \Yii::$app->user->id;//$model->getStatusLastUpdateUser($model->getValidatedStatus());
-                        $factory = new BuilderFactory();
-                        $builder = $factory->create(BuilderFactory::VALIDATED_MAIL_BUILDER);
-                        $to[] = $validator_id;
-                        if($model->getNotifiedUserId() != $validator_id)
-                        {
-                            $to[] = $model->getNotifiedUserId();
+                } else {
+                    if (!strcmp($model->getValidatedStatus(), $event->getEndStatus()->getId())) {
+                        $sentPersonalized = self::sendPersonalizedValidatedEmail($model, $module);
+                        if (!$sentPersonalized) {
+                            $validator_id = \Yii::$app->user->id;//$model->getStatusLastUpdateUser($model->getValidatedStatus());
+                            $factory = new BuilderFactory();
+                            $to[] = $validator_id;
+                            if ($model->getNotifiedUserId() != $validator_id) {
+                                $to[] = $model->getNotifiedUserId();
+                            }
+                            $builder = $factory->create(BuilderFactory::VALIDATED_MAIL_BUILDER);
+                            $to = array_unique($to);
+                            $builder->sendEmail($to, [$model]);
                         }
-                        $builder->sendEmail($to,[$model]);
                     }
                 }
             }
-        }
-        catch(Exception $ex)
-        {
+        } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
     }
+
+    /**
+     * @param $model
+     * @param $module
+     * @return bool
+     * Send personalized email after Validate a model
+     */
+    public static function sendPersonalizedValidatedEmail($model, $module)
+    {
+
+        if (!empty($module->personalizedValidatedEmail)) {
+            if (!empty($module->personalizedValidatedEmail[get_class($model)])) {
+                $personalizedClass = $module->personalizedValidatedEmail[get_class($model)]['class'];
+                $method = $module->personalizedValidatedEmail[get_class($model)]['method'];
+                $personalizedClass::$method($model);
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Send customized mails on status changes defined in model->mailStatuses
@@ -127,22 +145,22 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
         try {
             $eventEndStatus = $event->getEndStatus()->getId();
             //if model was new record the start status is not defined, check initial status id
-            if(!is_null($event->getStartStatus())){
+            if (!is_null($event->getStartStatus())) {
                 $eventStartStatus = $event->getStartStatus()->getId();
-            }else{
-                $eventStartStatus = $model->getWorkflowSource()->getWorkflow($model->formName().'Workflow')->getInitialStatusId();
+            } else {
+                $eventStartStatus = $model->getWorkflowSource()->getWorkflow($model->formName() . 'Workflow')->getInitialStatusId();
             }
 
             /**
              * @var string $endStatus
              * @var ChangeStatusEmail $email
              */
-            foreach ($model->mailStatuses as $endStatus => $email){
+            foreach ($model->mailStatuses as $endStatus => $email) {
                 // if the model is going to the status for which mail sending is needed
-                if(!strcmp($endStatus, $eventEndStatus)){
+                if (!strcmp($endStatus, $eventEndStatus)) {
                     //if send mail independently by start status or the start status matches
                     $startStatus = $email->startStatus;
-                    if( !isset($startStatus) || !strcmp($startStatus, $eventStartStatus)){
+                    if (!isset($startStatus) || !strcmp($startStatus, $eventStartStatus)) {
                         $factory = new BuilderFactory();
                         $builder = $factory->create(BuilderFactory::CUSTOM_MAIL_BUILDER, $email, $endStatus);
 
@@ -154,7 +172,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
                                 $validator_id = $model->getStatusLastUpdateUser($endStatus);
                                 $recipients[] = $validator_id;
                             }
-                            $builder->sendEmail($recipients,[$model]);
+                            $builder->sendEmail($recipients, [$model]);
                         } else { //mail to validators
                             $userIds = $model->getValidatorUsersId();
                             if (empty($userIds)) {
@@ -176,8 +194,7 @@ class NotifyWorkflowListener extends \yii\base\BaseObject
                 }
             }
 
-        } catch(Exception $ex)
-        {
+        } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
     }

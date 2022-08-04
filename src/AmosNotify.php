@@ -69,10 +69,17 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
+    /**
+     *  disable notification for default behavior.
+     *  enable notification only with post parameter: saveNotificationSendEmail = 1
+     */
+    public $disableDefaultBehaviorClasses = [
+    ];
+
     public $orderEmailSummary = [
         'open20\amos\events\models\Event',
         'open20\amos\news\models\News',
-        'open20\amos\partnershipprofiles\models',
+        'open20\amos\partnershipprofiles\models\PartnershipProfile',
         'open20\amos\discussioni\models\DiscussioniTopic',
         'open20\amos\sondaggi\models\Sondaggi',
     ];
@@ -84,6 +91,17 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $usersLimit = 5;            // max users in email to userNotification (es max contatti, max visits)
     public $enableNewsletter = false;
     public $enableSuggestions = false;
+
+    /**
+     * @var array
+     *    $personalizedValidatedEmail => [
+     *          "open20\amos\admin\models\UserProfile" => [
+                    'class' => 'backend\modules\poiadmin\utility\PoiAdminEmailUtility',
+                    'method' => 'sendEmailUserValidated'
+                ]
+     *    ]
+     */
+    public $personalizedValidatedEmail = [];
 
     /**
      * @var null |string
@@ -119,10 +137,15 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $customIconPlugins = [];
 
     public $contentToNotNotify = [];
-
+    
+    /**
+     * @var string[] $mailThemeColor
+     */
     public $mailThemeColor = [
         'bgPrimary' => '#297A38',
         'bgPrimaryDark' => '#204D28',
+        'textContrastBgPrimary' => '#FFFFFF',
+        'textContrastBgPrimaryDark' => '#FFFFFF',
         'textPrimary' => '#FFFFFF',
         'textPrimaryDark' => '#FFFFFF'
     ];
@@ -159,15 +182,12 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $this->mailThemeColor['bgPrimary'] = Yii::$app->params['layoutMailConfigurations']['bgPrimary'];
         }
         if (isset(Yii::$app->params['layoutMailConfigurations']['bgPrimaryDark'])) {
-
             $this->mailThemeColor['bgPrimaryDark'] = Yii::$app->params['layoutMailConfigurations']['bgPrimaryDark'];
         }
         if (isset(Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimary'])) {
-
             $this->mailThemeColor['textContrastBgPrimary'] = Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimary'];
         }
         if (isset(Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimaryDark'])) {
-
             $this->mailThemeColor['textContrastBgPrimaryDark'] = Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimaryDark'];
         }
         \Yii::setAlias('@open20/amos/notificationmanager/commands', __DIR__ . '/commands/');

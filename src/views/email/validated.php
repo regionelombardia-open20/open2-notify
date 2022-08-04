@@ -14,8 +14,9 @@ use open20\amos\core\interfaces\ModelGrammarInterface;
 use open20\amos\cwh\base\ModelContentInterface;
 use open20\amos\notificationmanager\AmosNotify;
 
-if (!empty($validator)) {
-    $this->params['profile'] = $validator;
+
+if (!empty($profile)) {
+    $this->params['profile'] = $profile;
 }
 
 /** @var ModelGrammarInterface $modelGrammar */

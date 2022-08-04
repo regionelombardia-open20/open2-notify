@@ -25,7 +25,8 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $updated_at
  */
 
-class NotificationsSent extends \yii\db\ActiveRecord{
+class NotificationsSent extends \open20\amos\core\record\Record
+{
     
     //const
     const SLEEPING_USER = 0x0001;           // dec. 1
@@ -37,9 +38,9 @@ class NotificationsSent extends \yii\db\ActiveRecord{
      * @inheritdoc
      */
     public function behaviors() {
-        return array_merge(parent::behaviors(), [
+        return [
             'class' =>  TimestampBehavior::className(),
-        ]);
+        ];
     }
     
 }

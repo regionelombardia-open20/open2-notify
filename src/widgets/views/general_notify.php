@@ -56,7 +56,7 @@ $this->registerJs($js);
 
 ?>
 <div class="col-xs-12">
-    <div class="form-group col-xs-6 nop">
+    <div class="form-group">
         <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere notifiche di aggiornamento dalla piattaforma {NomePiattaforma} ?', ['NomePiattaforma' => \Yii::$app->name]) ?></label>
         <?= Html::radioList('notifications_enabled', $notificationConf->notifications_enabled, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
                 'id' => 'notifications-enabled'

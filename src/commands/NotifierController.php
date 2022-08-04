@@ -387,6 +387,11 @@ class NotifierController extends Controller
                             foreach ($typeOFnotification as $typeOfNotify) {
                                 $query = $this->getNotifications($type, $typeOfNotify, $user);
 
+                                //se le notifiche generali sono settate a 'type' non invio notifiche se non quelle delle community
+                                if($notificationconf->email != $type){
+                                    $query->andWhere(['is not', 'notification.models_classname_id', null]);
+                                    $query->andWhere(['is not', 'notification.record_id', null]);
+                                }
 
                                 // Get the netowrks to not notify
                                 $notificationNetworkConfDontNotify = NotifyUtility::getNetworkNotificationConf($uid, $type);
@@ -847,7 +852,7 @@ class NotifierController extends Controller
             ->andWhere([$notificationTable . '.channels' => $channelInternal])
             ->andWhere([$notificationReadTable . '.user_id' => null])
             ->andWhere(['>=', $notificationTable . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")])
-            ->andWhere(['>=', $notificationTable . ".created_at", new Expression('UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency)')]);
+            ->andWhere(['>=', $notificationTable . ".created_at", new Expression('IF('. $notificationConfTable.'.last_update_frequency is null, 0, UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency))')]);
 
         if ($typeOfNotify == self::TYPE_OF_SECTION_NORMAL) {
             $query->andWhere(['models_classname_id' => null, 'record_id' => null]);
@@ -876,7 +881,8 @@ class NotifierController extends Controller
                 ->andWhere([NotificationsRead::tableName() . '.user_id' => null])
                 ->andWhere([Notification::tableName() . '.class_name' => \open20\amos\comments\models\Comment::className()])
                 ->andWhere(['>=', Notification::tableName() . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")])
-                ->andWhere(['>=', $notificationTable . ".created_at", new Expression('UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency)')]);
+               ->andWhere(['>=', $notificationTable . ".created_at", new Expression('IF('. $notificationConfTable.'.last_update_frequency is null, 0, UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency))')]);
+
         }
         return $query;
 //        BY FIELD(class_name, 'open20\\amos\\events\\models\\Event', 'open20\\amos\\news\\models\\News', 'open20\\amos\\partnershipprofiles\\models\PartnershipProfiles', 'open20\\amos\\discussioni\\models\\DiscussioniTopic'), class_name
@@ -973,12 +979,18 @@ class NotifierController extends Controller
                 if (!empty($notificationconf)) {
                     /** @var Notification $notificationModel */
                     $notificationModel = $this->notifyModule->createModel('Notification');
+                    $orderByField = $this->getOrderModelsToNotify();
                     $query = $notificationModel::find()
                         ->leftJoin(NotificationsRead::tableName(), ['notification.id' => new Expression(NotificationsRead::tableName() . '.notification_id'), NotificationsRead::tableName() . '.user_id' => $uid])
                         ->andWhere(['channels' => NotificationChannels::CHANNEL_MAIL])
                         ->andWhere([NotificationsRead::tableName() . '.user_id' => null])
                         ->andWhere(['>=', Notification::tableName() . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")]);
 
+                    //se le notifiche generali sono settate a 'type' non invio notifiche se non quelle delle community
+                    if($notificationconf->email != $type){
+                        $query->andWhere(['is not', 'notification.models_classname_id', null]);
+                        $query->andWhere(['is not', 'notification.record_id', null]);
+                    }
                     // Get the netowrks to not notify
                     $notificationNetworkConfDontNotify = NotifyUtility::getNetworkNotificationConf($uid, $type);
                     $networkConfArray = [];
@@ -1064,7 +1076,12 @@ class NotifierController extends Controller
                             continue;
                         }
                     }
-                    $query->orderBy('class_name');
+                    if (!empty($orderByField)) {
+                        $query->orderBy(new Expression('FIELD(class_name, ' . $orderByField . ') DESC, class_name'));
+                    } else {
+                        $query->orderBy('class_name');
+                    }
+
                     //                Console::stdout($query->createCommand()->rawSql. PHP_EOL);
                     $result = $query->all();
                     if (!empty($result)) {

@@ -48,7 +48,7 @@ use yii\db\ActiveRecord;
  *
  * @package open20\amos\notificationmanager\models
  */
-class NotificationConf extends ActiveRecord
+class NotificationConf extends \open20\amos\core\record\Record
 {
     /**
      * @var AmosNotify $notifyModule
@@ -125,14 +125,14 @@ class NotificationConf extends ActiveRecord
      */
     public function behaviors()
     {
-        return array_merge(parent::behaviors(), [
+        return [
             "TimestampBehavior" => [
                 'class' => TimestampBehavior::className(),
                 'value' => function () {
                     return date('Y-m-d H:i:s');
                 },
             ],
-        ]);
+        ];
     }
 
     /**

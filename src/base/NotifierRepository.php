@@ -121,26 +121,28 @@ class NotifierRepository
     {
         $allOk = true;
         try {
-            $classObj = new $class_name;
+           $classObj = new $class_name;
             $subquery = new Query();
             $subquery->distinct()
                 ->select('id')
                 ->from(['subquery' => $externalquery]);
-            
+            $subquery = $subquery->all();
+
             $query = new Query();
             $query
                 ->distinct()
                 ->select('a.id as notification_id')
-                ->from(Notification::tableName() . ' a')
-                ->leftJoin(NotificationsRead::tableName() . ' b', 'a.id = b.notification_id and b.user_id = ' . $uid)
-                ->leftJoin($classObj->tableName(), 'a.content_id = ' . $classObj->tableName() . '.id')
+                ->from(Notification::tableName().' a')
+                ->leftJoin(NotificationsRead::tableName().' b', 'a.id = b.notification_id and b.user_id = '.$uid)
+                ->leftJoin($classObj->tableName(), 'a.content_id = '.$classObj->tableName().'.id')
                 ->andWhere([
                     'b.user_id' => null,
                     'a.channels' => $channel,
                     'a.class_name' => $class_name,
-                    $classObj->tableName() . '.id' => $subquery
-                ]);
-            
+                    $classObj->tableName().'.id' => \yii\helpers\ArrayHelper::map($subquery, 'id', 'id')
+            ]);
+
+
             $result = $query->all();
             foreach ($result as $model) {
                 /** @var NotificationsRead $read */

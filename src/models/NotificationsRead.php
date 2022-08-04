@@ -24,7 +24,8 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $updated_at
  */
 
-class NotificationsRead extends \yii\db\ActiveRecord{
+class NotificationsRead extends \open20\amos\core\record\Record
+{
     
     
     public static function tableName() {
@@ -34,9 +35,9 @@ class NotificationsRead extends \yii\db\ActiveRecord{
      * @inheritdoc
      */
     public function behaviors() {
-        return array_merge(parent::behaviors(), [
+        return [
             'class' =>  TimestampBehavior::className(),
-        ]);
+        ];
     }
     
 }

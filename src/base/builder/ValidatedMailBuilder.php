@@ -57,20 +57,23 @@ class ValidatedMailBuilder extends AMailBuilder
 
             $userid = \Yii::$app->user->id; //$model->getStatusLastUpdateUser($model->getValidatedStatus());
             if (!is_null($userid)) {
-                $user = User::findOne($userid);
+                $loggedUser = User::findOne($userid);
                 $comment = $model->getStatusLastUpdateComment($model->getValidatedStatus());
+                /**
+                 *
+                 */
+                $validator = $loggedUser->getUserProfile()->one();
+
                 $controller = \Yii::$app->controller;
 
                     $view = $controller->renderPartial($viewValidatorPath, [
                     'model' => $model,
-                    'validator' => $user->getUserProfile()->one(),
-                    'comment' => $comment
-                ]);
+                    'validator' => $validator ,
+                    'comment' => $comment,
+                    'profile' => $user->userProfile,
+                    ]);
 
-                /**
-                 *
-                 */
-                $validator = $user->getUserProfile()->one();
+
                 $userProfile = $model->createdUserProfile;
 
                 $layout = '{publisher}';
@@ -81,7 +84,7 @@ class ValidatedMailBuilder extends AMailBuilder
 
                 $params = [
                     'model' => $model,
-                    'validator' => $user->getUserProfile()->one(),
+                    'validator' => $validator,
                     'comment' => $comment,
                     'original' => $view,
                     'title' => $model->getTitle(),
@@ -107,12 +110,9 @@ class ValidatedMailBuilder extends AMailBuilder
                     'validator_avatar' => $validator->avatarUrl,
                 ];
 
-
-                $user = $model->getCreatedUserProfile()->one();
-
-                if(!is_null($user)) {
+                if(!is_null($userProfile)) {
                     $params['publisher_widget'] = \open20\amos\admin\widgets\UserCardWidget::widget([
-                        'model' => $user,
+                        'model' => $userProfile,
                         'onlyAvatar' => true,
                         'absoluteUrl' => true
                     ]);

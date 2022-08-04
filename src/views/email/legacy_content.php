@@ -13,6 +13,7 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\ContentModelInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\record\Record;
+use open20\amos\notificationmanager\AmosNotify;
 
 /**
  * @var Record|ContentModelInterface|ViewModelInterface $model

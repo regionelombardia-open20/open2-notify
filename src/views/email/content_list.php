@@ -11,6 +11,7 @@
 
 use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\ContentModelInterface;
+use open20\amos\core\interfaces\ModelImageInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\record\Record;
 use open20\amos\notificationmanager\AmosNotify;
@@ -23,6 +24,7 @@ use open20\amos\notificationmanager\AmosNotify;
 if (!empty($profile)) {
     $this->params['profile'] = $profile;
 }
+/** @var AmosNotify $notifyModule */
 $notifyModule = AmosNotify::instance();
 ?>
 
@@ -30,7 +32,7 @@ $notifyModule = AmosNotify::instance();
     <td colspan="2" style="padding-bottom:10px;">
         <table cellspacing="0" cellpadding="0" border="0" align="center"   class="email-container" width="100%">
 
-<?php foreach ($arrayModels as $model){ ?>
+<?php foreach ($arrayModels as $model) { ?>
     <?php
     $modelTitle = $model->getTitle();
     $modelAbsoluteFullViewUrl = Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl());
@@ -38,20 +40,22 @@ $notifyModule = AmosNotify::instance();
     <tr>
         <td bgcolor="#FFFFFF" style="padding:10px 15px 10px 15px;">
             <table width="100%">
-                <!-- Hero Image, Flush : BEGIN -->
-                <tr>
+                <?php if ($model instanceof ModelImageInterface): ?>
+                    <!-- Hero Image, Flush : BEGIN -->
+                    <tr>
                         <td>
                             <?php
-                                $url = '/img/img_default.jpg';
-                                $image=$model->getModelImage();
-                                if (!is_null($image)) {
-                                    $url = $image->getUrl('square_large', false, true);
-                                }
-                                $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
+                            $url = $model->getModelImageUrl('square_large', true, '/img/img_default.jpg', false, true);
+                            if ($model instanceof ContentModelInterface) {
+                                $imageAlt = $model->getTitle();
+                            } else {
+                                $imageAlt = AmosNotify::t('amosnotify', '#content_image');
+                            }
                             ?>
-                            <img src="<?= $url ?>" border="0" width="570" align="center" style="max-width: 570px; width:100%;">
+                            <img src="<?= Yii::$app->urlManager->createAbsoluteUrl($url); ?>" width="570" align="center" style="max-width: 570px; width:100%; border: 0;" alt="<?= $imageAlt; ?>">
                         </td>
-                </tr>
+                    </tr>
+                <?php endif; ?>
                 <tr>
                     <td colspan="2" style="font-size:18px; font-weight:bold; padding: 5px 0 ; font-family: sans-serif;">
                         <?= Html::a($modelTitle, $modelAbsoluteFullViewUrl, [
@@ -78,7 +82,7 @@ $notifyModule = AmosNotify::instance();
                                 </td>
 	                            <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?= $modelAbsoluteFullViewUrl ?>"
                                  style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
-			                            <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+			                            <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= AmosNotify::t('amosnotify', '#content_image'); ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                                     </a>
                                 </td>
                             </tr>

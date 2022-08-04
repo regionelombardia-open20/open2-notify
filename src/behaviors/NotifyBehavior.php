@@ -22,6 +22,7 @@ use Yii;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\db\ActiveRecord;
+use yii\helpers\VarDumper;
 use yii\log\Logger;
 use yii\web\Application;
 
@@ -437,6 +438,13 @@ class NotifyBehavior extends Behavior
             $isSetPost     = isset($post);
         }
 
+        // On configuration we define models can notified only by post parameter.
+        // For this class, if isPostCorrect is false, exit... do nothing
+        $notificationOnlyOnPostParameter = in_array($modelClassName,$this->notifyModule->disableDefaultBehaviorClasses);
+        if ($notificationOnlyOnPostParameter && !$isPostCorrect) {
+            return true;
+        }
+
         // if you validate the content from outside the update pge of the content, the modal is not shown and che record of notification-send.email is always created
         if ($bypassCheckPostParam || $isPostCorrect || !$isSetPost) {
             if ($channel == NotificationChannels::CHANNEL_MAIL) {
@@ -467,25 +475,27 @@ class NotifyBehavior extends Behavior
     public function saveNotificationContentLanguage($notify)
     {
         try {
-            $notify_content_language = null;
-            if (!(\Yii::$app instanceof Yii\console\Application)) {
-                $notify_content_language = \Yii::$app->request->post('notify_content_language');
-            }
-            $modelsclassname = ModelsClassname::find()
-                    ->andWhere(['classname' => $notify->class_name])->one();
-            if ($modelsclassname) {
-                if (!empty($notify_content_language)) {
-                    $notificationContentLanguage = NotificationContentLanguage::find()
-                            ->andWhere(['models_classname_id' => $modelsclassname->id])
-                            ->andWhere(['record_id' => $notify->content_id])->one();
+            if (!(\Yii::$app instanceof yii\console\Application)) {
+                $notify_content_language = null;
+                if (!(\Yii::$app instanceof Yii\console\Application)) {
+                    $notify_content_language = \Yii::$app->request->post('notify_content_language');
+                }
+                $modelsclassname = ModelsClassname::find()
+                        ->andWhere(['classname' => $notify->class_name])->one();
+                if ($modelsclassname) {
+                    if (!empty($notify_content_language)) {
+                        $notificationContentLanguage = NotificationContentLanguage::find()
+                                ->andWhere(['models_classname_id' => $modelsclassname->id])
+                                ->andWhere(['record_id' => $notify->content_id])->one();
 
-                    if (empty($notificationContentLanguage)) {
-                        $notificationContentLanguage                      = new NotificationContentLanguage();
-                        $notificationContentLanguage->models_classname_id = $modelsclassname->id;
-                        $notificationContentLanguage->record_id           = $notify->content_id;
+                        if (empty($notificationContentLanguage)) {
+                            $notificationContentLanguage                      = new NotificationContentLanguage();
+                            $notificationContentLanguage->models_classname_id = $modelsclassname->id;
+                            $notificationContentLanguage->record_id           = $notify->content_id;
+                        }
+                        $notificationContentLanguage->language = $notify_content_language;
+                        $notificationContentLanguage->save(false);
                     }
-                    $notificationContentLanguage->language = $notify_content_language;
-                    $notificationContentLanguage->save(false);
                 }
             }
         } catch (Exception $bex) {
