@@ -16,7 +16,7 @@ use open20\amos\notificationmanager\AmosNotify;
  */
 
 $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
-$urlIcon = \Yii::$app->params['platform']['backendUrl'].\open20\amos\notificationmanager\utility\NotifyUtility::getIconNetwork($color);
+$urlIcon = \Yii::$app->params['platform']['frontendUrl'].\open20\amos\notificationmanager\utility\NotifyUtility::getIconNetwork($color);
 
 ?>
 

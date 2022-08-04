@@ -33,13 +33,14 @@ class m191022_155813_create_notification_language_preferences extends Migration
                 'updated_by' =>  $this->integer()->comment('Updated at'),
                 'deleted_by' =>  $this->integer()->comment('Deleted at'),
             ], $this->db->driverName === 'mysql' ? 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB AUTO_INCREMENT=1' : null);
+
+            $this->addForeignKey('fk_notification_languagepref_user_id_id1', self::TABLE, 'user_id', 'user', 'id');
         }
         else
         {
             echo "Nessuna creazione eseguita in quanto la tabella esiste gia'";
         }
 
-            $this->addForeignKey('fk_notification_languagepref_user_id_id1', self::TABLE, 'user_id', 'user', 'id');
 
     }
 

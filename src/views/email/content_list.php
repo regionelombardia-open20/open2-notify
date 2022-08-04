@@ -13,6 +13,7 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\ContentModelInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\record\Record;
+use open20\amos\notificationmanager\AmosNotify;
 
 /**
  * @var Record|ContentModelInterface|ViewModelInterface $model
@@ -22,7 +23,7 @@ use open20\amos\core\record\Record;
 if (!empty($profile)) {
     $this->params['profile'] = $profile;
 }
-
+$notifyModule = AmosNotify::instance();
 ?>
 
 <tr>
@@ -37,6 +38,20 @@ if (!empty($profile)) {
     <tr>
         <td bgcolor="#FFFFFF" style="padding:10px 15px 10px 15px;">
             <table width="100%">
+                <!-- Hero Image, Flush : BEGIN -->
+                <tr>
+                        <td>
+                            <?php
+                                $url = '/img/img_default.jpg';
+                                $image=$model->getModelImage();
+                                if (!is_null($image)) {
+                                    $url = $image->getUrl('square_large', false, true);
+                                }
+                                $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
+                            ?>
+                            <img src="<?= $url ?>" border="0" width="570" align="center" style="max-width: 570px; width:100%;">
+                        </td>
+                </tr>
                 <tr>
                     <td colspan="2" style="font-size:18px; font-weight:bold; padding: 5px 0 ; font-family: sans-serif;">
                         <?= Html::a($modelTitle, $modelAbsoluteFullViewUrl, [
@@ -61,8 +76,9 @@ if (!empty($profile)) {
                                         </tr>
                                     </table>
                                 </td>
-                                <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?= $modelAbsoluteFullViewUrl ?>" style="background: #297A38; border:3px solid #297A38; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
-                                        <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+	                            <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?= $modelAbsoluteFullViewUrl ?>"
+                                 style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
+			                            <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                                     </a>
                                 </td>
                             </tr>

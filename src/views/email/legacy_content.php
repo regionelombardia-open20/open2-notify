@@ -22,14 +22,13 @@ use open20\amos\core\record\Record;
 if (!empty($profile)) {
     $this->params['profile'] = $profile;
 }
-
+$notifyModule = AmosNotify::instance();
 ?>
 
 <div style="border:1px solid #cccccc;padding:10px;margin-bottom: 10px;background-color: #ffffff;">
     <div style="padding:0;margin:0">
         <h3 style="font-size:2em;line-height: 1;margin:0;padding:10px 0;">
-            <?= Html::a($model->getTitle(), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #297A38;']) ?>
-        </h3>
+            <?= Html::a($model->getTitle(), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: '.$notifyModule->mailThemeColor['bgPrimary'] .';']) ?>        </h3>
     </div>
     <div style="box-sizing:border-box;font-size:13px;font-weight:normal;color:#000000;">
         <?= $model->getDescription(true); ?>

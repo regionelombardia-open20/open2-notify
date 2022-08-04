@@ -206,7 +206,7 @@ class NotifierController extends Controller
         try {
             $module      = AmosNotify::getInstance();
             /** @var AmosAdmin $adminModule */
-            $adminModule = Yii::$app->getModule('admin');
+            $adminModule = Yii::$app->getModule(AmosAdmin::getModuleName());
 
             $query = new Query();
             $query->from(UserProfile::tableName());
@@ -544,23 +544,23 @@ class NotifierController extends Controller
     protected function setOtherExclusions($networkConfArray, $user_id)
     {
         try{
-        $moduleCommunity = \Yii::$app->getModule('community');
-        if (!empty($moduleCommunity)) {
-            $classnameId = \open20\amos\core\models\ModelsClassname::find()->andWhere(['classname' => 'open20\\amos\\community\\models\\Community'])->one();
-            if (!empty($classnameId)) {
-                $class  = 'open20\amos\community\models\CommunityUserMm';
-                $search = $class::find()->andWhere(['user_id' => $user_id])->andWhere(['or',
+            $moduleCommunity = \Yii::$app->getModule('community');
+            if (!empty($moduleCommunity)) {
+                $classnameId = \open20\amos\core\models\ModelsClassname::find()->andWhere(['classname' => 'open20\\amos\\community\\models\\Community'])->one();
+                if (!empty($classnameId)) {
+                    $class  = 'open20\amos\community\models\CommunityUserMm';
+                    $search = $class::find()->andWhere(['user_id' => $user_id])->andWhere(['or',
                         ['status' => 'GUEST'],
                         ['role' => 'GUEST']
                     ])->select('community_id')
-                    ->all();
-                if (!empty($search)) {
-                    foreach ($search as $community) {
-                        $networkConfArray[$classnameId->id] = $community->id;
+                        ->all();
+                    if (!empty($search)) {
+                        foreach ($search as $community) {
+                            $networkConfArray[$classnameId->id] = $community->id;
+                        }
                     }
                 }
             }
-        }
         } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
@@ -831,15 +831,23 @@ class NotifierController extends Controller
         $notificationModel = $this->notifyModule->createModel('Notification');
         $notificationTable = $notificationModel::tableName();
 
+        /** @var NotificationConf $notificationConfModel */
+        $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
+        $notificationConfTable = $notificationConfModel::tableName();
+
         /** @var NotificationsRead $notificationReadModel */
         $notificationReadModel = $this->notifyModule->createModel('NotificationsRead');
         $notificationReadTable = $notificationReadModel::tableName();
 
+
+
         $query = $notificationModel::find()
             ->leftJoin($notificationReadTable, [$notificationTable . '.id' => new Expression($notificationReadTable . '.notification_id'), $notificationReadTable . '.user_id' => $uid])
+            ->leftJoin($notificationConfTable, [$notificationTable . '.user_id' => new Expression($notificationConfTable . '.user_id')])
             ->andWhere([$notificationTable . '.channels' => $channelInternal])
             ->andWhere([$notificationReadTable . '.user_id' => null])
-            ->andWhere(['>=', $notificationTable . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")]);
+            ->andWhere(['>=', $notificationTable . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")])
+            ->andWhere(['>=', $notificationTable . ".created_at", new Expression('UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency)')]);
 
         if ($typeOfNotify == self::TYPE_OF_SECTION_NORMAL) {
             $query->andWhere(['models_classname_id' => null, 'record_id' => null]);
@@ -863,10 +871,12 @@ class NotifierController extends Controller
         } else if ($typeOfNotify == self::TYPE_OF_SECTION_COMMENTS) {
             $query = Notification::find()
                 ->leftJoin(NotificationsRead::tableName(), ['notification.id' => new Expression(NotificationsRead::tableName() . '.notification_id'), NotificationsRead::tableName() . '.user_id' => $uid])
+                ->leftJoin($notificationConfTable, [$notificationTable . '.user_id' => new Expression($notificationConfTable . '.user_id')])
                 ->andWhere(['channels' => $channelInternal])
                 ->andWhere([NotificationsRead::tableName() . '.user_id' => null])
                 ->andWhere([Notification::tableName() . '.class_name' => \open20\amos\comments\models\Comment::className()])
-                ->andWhere(['>=', Notification::tableName() . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")]);
+                ->andWhere(['>=', Notification::tableName() . ".created_at", new Expression("UNIX_TIMESTAMP('" . $user['created_at'] . "')")])
+                ->andWhere(['>=', $notificationTable . ".created_at", new Expression('UNIX_TIMESTAMP(' . $notificationConfTable.'.last_update_frequency)')]);
         }
         return $query;
 //        BY FIELD(class_name, 'open20\\amos\\events\\models\\Event', 'open20\\amos\\news\\models\\News', 'open20\\amos\\partnershipprofiles\\models\PartnershipProfiles', 'open20\\amos\\discussioni\\models\\DiscussioniTopic'), class_name
@@ -897,7 +907,7 @@ class NotifierController extends Controller
         $modelsclassname = ModelsClassname::find()->andWhere(['classname' => $classname])->one();
         if ($modelsclassname) {
             $queryModel->leftJoin('notification_content_language',
-                    'notification_content_language.record_id = '.$classname::tableName().'.id')
+                'notification_content_language.record_id = '.$classname::tableName().'.id')
                 ->andWhere(['models_classname_id' => $modelsclassname->id])
                 ->andWhere(['language' => $language]);
         }

@@ -22,22 +22,21 @@ if (!empty($validator)) {
 $modelGrammar = $model->getGrammar();
 $articleSingular = $modelGrammar->getArticleSingular();
 $spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
-
+$notifyModule = AmosNotify::instance();
 ?>
 
 <div>
 
     <div style="box-sizing:border-box;color:#000000;">
         <div style="padding:5px 10px;background-color: #F2F2F2;text-align:center;">
-            <h1 style="color:#297A38;font-size:1.5em;margin:0;">
+	        <h1 style="color:<?= $notifyModule->mailThemeColor['bgPrimary'] ?>;font-size:1.5em;margin:0;">
                 <?= AmosNotify::t('amosnotify', '#validated_email_1') . ' ' . $articleSingular . $spaceAfterArticleSingular . strtolower($modelGrammar->getModelSingularLabel()) ?>
             </h1>
         </div>
     </div>
     <div style="border:1px solid #cccccc;padding:10px;margin-bottom: 10px;background-color: #ffffff;margin-top: 20px;">
         <div>
-            <h2 style="font-size:2em;line-height: 1;"><?= Html::a($model->getTitle(), \Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #297A38;']) ?></h2>
-        </div>
+	        <h2 style="font-size:2em;line-height: 1;"><?= Html::a($model->getTitle(), \Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: '.$notifyModule->mailThemeColor['bgPrimary'].';']) ?></h2>        </div>
         <div style="box-sizing:border-box;">
             <div style="box-sizing:border-box;padding:0;font-weight:bold;color:#000000;font-weight: normal;">
                 <?php

@@ -39,7 +39,7 @@ class NotifyUtility extends BaseObject
      * @var AmosNotify $notifyModule
      */
     protected $notifyModule = null;
-    
+
     /**
      * @inheritdoc
      */
@@ -48,7 +48,7 @@ class NotifyUtility extends BaseObject
         parent::init();
         $this->notifyModule = AmosNotify::instance();
     }
-    
+
     /**
      * The method save the notification configuration.
      * @param int $userId
@@ -76,8 +76,9 @@ class NotifyUtility extends BaseObject
             $notificationConf = $this->notifyModule->createModel('NotificationConf');
             $notificationConf->user_id = $userId;
         }
-        
+
         $emailFrequencyValues = NotificationsConfOpt::emailFrequencyValues();
+        $emfreq_back = $notificationConf->email;
         if ($emailFrequency) {
             /** @var NotificationsConfOpt $notificationConfOpt */
             $notificationConfOpt = $this->notifyModule->createModel('NotificationsConfOpt');
@@ -98,42 +99,60 @@ class NotifyUtility extends BaseObject
             }
             $notificationConf->sms = $smsFrequency;
         }
-        
+
         $modelAttributesList = $notificationConf->attributes();
         foreach ($modelAttributesList as $fieldName) {
             if (isset($params[$fieldName])) {
                 $notificationConf->{$fieldName} = $params[$fieldName];
             }
         }
-        
+        if($notificationConf->last_update_frequency == null){
+            $notificationConf->last_update_frequency =  date('Y-m-d H:i:s',strtotime("-3 Months"));
+        }
         if (isset($params['contatti_suggeriti_email_selector_name'])) {
             // Check the params correct value for contatti_suggeriti_email_selector_name
             if (!in_array($params['contatti_suggeriti_email_selector_name'], $emailFrequencyValues)) {
                 return false;
             }
+
+            if($notificationConf->contatti_suggeriti_email == 0 && $params['contatti_suggeriti_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+                $notificationConf->last_update_frequency =  date('Y-m-d H:i:s');
+            }
+
             $notificationConf->contatti_suggeriti_email = $params['contatti_suggeriti_email_selector_name'];
         }
-        
+
+        if($emfreq_back == NotificationsConfOpt::EMAIL_OFF  && !empty($params['email_frequency_selector_name']) && $params['email_frequency_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+            $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
+        }
         if (isset($params['contenuti_successo_email_selector_name'])) {
+            if($notificationConf->contenuti_successo_email == 0 && $params['contenuti_successo_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+                $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
+            }
             // Check the params correct value for contenuti_successo_email_selector_name
             if (!in_array($params['contenuti_successo_email_selector_name'], $emailFrequencyValues)) {
                 return false;
             }
             $notificationConf->contenuti_successo_email = $params['contenuti_successo_email_selector_name'];
         }
-        
+
         if (isset($params['profilo_successo_email_selector_name'])) {
+
+            if($notificationConf->profilo_successo_email == 0 && $params['profilo_successo_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+                $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
+            }
             // Check the params correct value for profilo_successo_email_selector_name
             if (!in_array($params['profilo_successo_email_selector_name'], $emailFrequencyValues)) {
                 return false;
             }
             $notificationConf->profilo_successo_email = $params['profilo_successo_email_selector_name'];
         }
-        
+
         if (isset($params['notifications_enabled'])) {
             $notificationConf->notifications_enabled = $params['notifications_enabled'];
         }
         if (isset($params['notify_content_pubblication'])) {
+
             $notificationConf->notify_content_pubblication = $params['notify_content_pubblication'];
         }
         if (isset($params['notify_comments'])) {
@@ -209,7 +228,7 @@ class NotifyUtility extends BaseObject
             }
         }
     }
-    
+
     /**
      * @param $userId
      * @param $notificationType
@@ -224,13 +243,13 @@ class NotifyUtility extends BaseObject
             ->andWhere(['user_id' => $userId])
             ->andWhere(['IS NOT', 'record_id', null])
             ->andWhere(['IS NOT', 'models_classname_id', null]);
-        
+
         $query->andWhere(['!=', 'email', $notificationType]);
         $query->andWhere(['IS NOT', 'email', null]);
-        
+
         return $query->all();
     }
-    
+
     /**
      * This method set the user default notifications configurations.
      * @param int $userId
@@ -254,7 +273,7 @@ class NotifyUtility extends BaseObject
         ];
         return $this->saveNotificationConf($userId, $emailFrequency, $smsFrequency, $params);
     }
-    
+
     /**
      * This method add the notifications configurations for all users that these configurations are missing.
      * @return bool
@@ -266,17 +285,17 @@ class NotifyUtility extends BaseObject
         $query = User::find();
         $query->select(['id']);
         $allUserIds = $query->column();
-        
+
         /** @var NotificationConf $notificationConfModel */
         $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
-        
+
         /** @var ActiveQuery $queryNotify */
         $queryNotify = $notificationConfModel::find();
         $queryNotify->select(['user_id']);
         $allNotificationConfsUserIds = $queryNotify->column();
-        
+
         $missingNotificationConfsUserIds = array_diff($allUserIds, $allNotificationConfsUserIds);
-        
+
         $allOk = true;
         foreach ($missingNotificationConfsUserIds as $userId) {
             $ok = $this->setDefaultNotificationsConfs($userId);
@@ -284,10 +303,10 @@ class NotifyUtility extends BaseObject
                 $allOk = false;
             }
         }
-        
+
         return $allOk;
     }
-    
+
     /**
      * @param $color
      * @return array
@@ -314,7 +333,7 @@ class NotifyUtility extends BaseObject
         }
         return $colors;
     }
-    
+
     /**
      * @param $color
      * @return string
@@ -333,7 +352,7 @@ class NotifyUtility extends BaseObject
         }
         return $icon;
     }
-    
+
     /**
      * @param $modelNetwork
      * @param $i
@@ -352,7 +371,7 @@ class NotifyUtility extends BaseObject
         }
         return $color;
     }
-    
+
     /**
      * @param string $classname
      * @param string $color
@@ -386,15 +405,15 @@ class NotifyUtility extends BaseObject
         $iconName .= '-' . $color . '.png';
         return $iconName;
     }
-    
+
     public function contactAccepted($mainUser, $invitedUser)
     {
-        
+
         //pr($mainUser->toArray());
         //pr($invitedUser->toArray());//exit;
         $factory = new BuilderFactory();
         $builder = $factory->create(BuilderFactory::CONTENT_CONTACT_ACCEPTED_BUILDER);
-        
+
         $notificationconf = NotificationConf::find()->andWhere(['user_id' => $mainUser->id])->one();
         if (!empty($notificationconf) &&
             (is_null($notificationconf->notifications_enabled) || $notificationconf->notifications_enabled) &&
@@ -404,7 +423,7 @@ class NotifyUtility extends BaseObject
             }
             $this->sendUserInformation($invitedUser, $mainUser, $builder);
         }
-        
+
         $notificationconf = NotificationConf::find()->andWhere(['user_id' => $invitedUser->id])->one();
         if (!empty($notificationconf) &&
             (is_null($notificationconf->notifications_enabled) || $notificationconf->notifications_enabled) &&
@@ -415,31 +434,31 @@ class NotifyUtility extends BaseObject
             $this->sendUserInformation($mainUser, $invitedUser, $builder);
         }
     }
-    
+
     public function sendUserInformation($aboutUser, $toUser, $builder)
     {
-        
+
         $results = $this->findUserData($aboutUser->id, $toUser->id);
-        
+
         // invia la mail coi contenuti
         if (!empty($results)) {
             $builder->sendEmailUserNotify([$toUser->id], $results);
         }
-        
+
     } // sendUserInformation
-    
+
     // A) contenuti creati da $aboutUser che $toUser può vedere
     // B) contenuti like da $aboutUser che $toUser può vedere
     // C) contenuti commentati da $aboutUser che $toUser può vedere
     // D) ultimi utenti entrati in contatto con $aboutUser
     protected function findUserData($aboutUserId, $toUserId)
     {
-        
+
         $results = [];
         $debugMe = false;
         $idsCountsGlobal = [];
         $module = AmosNotify::getInstance();
-        
+
         $modelsEnabled = \open20\amos\cwh\models\CwhConfigContents::find()->addSelect('classname')->column();
         $cwhModule = Yii::$app->getModule('cwh');
         if (isset($cwhModule)) {
@@ -447,14 +466,14 @@ class NotifyUtility extends BaseObject
                 if ($debugMe) {
                     print 'findUserContentData - $modelsEnabled $classname ' . $classname . '<br />' . "\n";
                 } // $debugMe
-                
+
                 // A) contenuti creati da $aboutUser che $toUser può vedere
                 $cwhActiveQuery = new \open20\amos\cwh\query\CwhActiveQuery($classname, [
                     'queryBase' => $classname::find(),
                     'userId' => $toUserId
                 ]);
                 $cwhActiveQuery::$userProfile = null; //reset user profile
-                
+
                 $queryId = $cwhActiveQuery->getQueryCwhOwnInterest();
                 $queryId->andWhere(['created_by' => $aboutUserId])
                     ->orderBy(['created_at' => SORT_DESC])
@@ -469,8 +488,8 @@ class NotifyUtility extends BaseObject
                 if (count($res) > 0) {
                     $results['created_by'][$classname] = $res;
                 }
-                
-                
+
+
                 // C) contenuti commentati da $aboutUser che $toUser può vedere
                 $queryId = $cwhActiveQuery->getQueryCwhOwnInterest();
                 $queryId->innerJoin(Comment::tableName(), [
@@ -491,8 +510,8 @@ class NotifyUtility extends BaseObject
                 if (count($res) > 0) {
                     $results['commented_by'][$classname] = $res;
                 }
-                
-                
+
+
                 // B) contenuti like da $aboutUser che $toUser può vedere
                 $queryId = $cwhActiveQuery->getQueryCwhOwnInterest();
                 $queryId->innerJoin(ModelsClassname::tableName(), [
@@ -519,11 +538,11 @@ class NotifyUtility extends BaseObject
                 if (count($res) > 0) {
                     $results['liked_by'][$classname] = $res;
                 }
-                
+
             } // foreach $modelsEnabled
-            
+
         } // $cwhModule
-        
+
         // D) ultimi utenti entrati in contatto con $aboutUser
         $queryId = UserProfileUtility::getQueryContacts($aboutUserId);
         $res = $queryId->all(); // tutti gli User connessi
@@ -535,9 +554,12 @@ class NotifyUtility extends BaseObject
         if (count($res) > 0) {
             $uids = [];
             foreach ($res as $r) {
-                $uids[] = $r->id;
+                // Removing $toUser from list
+                if($r->id != $toUserId) {
+                    $uids[] = $r->id;
+                }
             }
-            
+
             $queryId = UserProfile::find()
                 ->leftJoin(UserContact::tableName(), [
                     'or',
@@ -555,19 +577,19 @@ class NotifyUtility extends BaseObject
                 ->orderBy([UserContact::tableName() . '.accepted_at' => SORT_DESC])
                 ->limit($module->usersLimit);
             $res = $queryId->all();
-            
+
             if ($debugMe) {
                 print 'D.2) ultimi utenti entrati in contatto con $aboutUser' . '<br />' . "\n";
                 //print $queryId->createCommand()->rawSql.'<br />'."\n";
                 print '$queryId - trovati ' . count($res) . '<br />' . "\n";
             } // $debugMe
-            
+
             if (count($res) > 0) {
                 $results['connected_to']['open20\amos\admin\models\UserProfile'] = $res;
             }
-            
+
         }
-        
+
         if ($debugMe) {
             print 'findUserContentData - fine <br />' . "\n";//exit;
         } // $debugMe

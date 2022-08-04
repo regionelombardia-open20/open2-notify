@@ -10,6 +10,7 @@
  */
 namespace open20\amos\notificationmanager\commands;
 
+use open20\amos\admin\AmosAdmin;
 use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\notificationmanager\models\NotificationConf;
 use open20\amos\notificationmanager\utility\NotifyUtility;
@@ -1041,7 +1042,7 @@ class UserNotificationController extends NotifierController
      */
     protected function getBaseUserQuery($schedule)
     {
-        $adminModule = Yii::$app->getModule('admin');   /** @var AmosAdmin $adminModule */
+        $adminModule = Yii::$app->getModule(AmosAdmin::getModuleName());   /** @var AmosAdmin $adminModule */
 
         $query = new Query();
         $query->from(UserProfile::tableName());

@@ -8,12 +8,12 @@
  * @package    open20\amos\notificationmanager\views\email
  * @category   CategoryName
  */
+
 use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\ContentModelInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\record\Record;
-use open20\amos\cwh\base\ModelContentInterface;
-use open20\amos\core\forms\ItemAndCardHeaderWidget;
+use open20\amos\notificationmanager\AmosNotify;
 
 /**
  * @var Record|ContentModelInterface|ViewModelInterface $model
@@ -25,12 +25,14 @@ if (!empty($profile)) {
 }
 
 $colors = \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
+$notifyModule = AmosNotify::instance();
+
 ?>
 
  
 <?php
 foreach ($arrayModels as $model) {
-    $textButton      = \Yii::t('amosapp', 'Leggi');
+    $textButton      = Yii::t('amosapp', 'Leggi');
     $commentsVisible = false;
     $commentsCount   = false;
     $textNewComments = '';
@@ -40,7 +42,7 @@ foreach ($arrayModels as $model) {
     }
     if (!empty($arrayModelsComments)) {
         $count           = count($arrayModelsComments);
-        $textNewComments = "<h2>$count ".($count == 1 ? \Yii::t('amosapp', 'Commento nuovo') : \Yii::t('amosapp',
+        $textNewComments = "<h2>$count ".($count == 1 ? Yii::t('amosapp', 'Commento nuovo') : Yii::t('amosapp',
                 'Commenti nuovi'))."</h2>";
         $commentsCount   = true;
         if (!empty($arrayModelsComments[$model->id])) {
@@ -48,6 +50,20 @@ foreach ($arrayModels as $model) {
         }
     }
     ?>
+    <!-- Hero Image, Flush : BEGIN -->
+    <tr>
+        <td>
+            <?php
+                $url = '/img/img_default.jpg';
+                $image=$model->getModelImage();
+                if (!is_null($image)) {
+                    $url = $image->getUrl('square_large', false, true);
+                }
+                $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
+            ?>
+            <img src="<?= $url ?>" border="0" width="570" align="center" style="max-width: 570px; width:100%;">
+        </td>
+    </tr>
     <tr>
         <td colspan="2" style="font-size:18px; font-weight:bold; padding: 5px 0 ; font-family: sans-serif;">
             <?=
@@ -93,7 +109,9 @@ foreach ($arrayModels as $model) {
             </table>
         </td>
         <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
-            <a href="<?= Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()) ?>" style="background: <?= $colors[1] ?>; border:3px solid <?= $colors[1] ?>; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
+            <a href="<?= Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()) ?>"
+            
+            style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
                 <?php  if($commentsCount == false){  ?>
                 <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= $textButton ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                 <?php  }  ?>

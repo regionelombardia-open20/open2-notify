@@ -35,6 +35,7 @@ use yii\db\ActiveRecord;
  * @property integer $periodo_inattivita_flag
  * @property integer $contenuti_successo_email
  * @property integer $profilo_successo_email
+ * @property string $last_update_frequency
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -53,7 +54,7 @@ class NotificationConf extends ActiveRecord
      * @var AmosNotify $notifyModule
      */
     protected $notifyModule = null;
-    
+
     /**
      * @inheritdoc
      */
@@ -62,7 +63,7 @@ class NotificationConf extends ActiveRecord
         $this->notifyModule = AmosNotify::instance();
         parent::init();
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -70,14 +71,14 @@ class NotificationConf extends ActiveRecord
     {
         return 'notificationconf';
     }
-    
+
     /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['created_at', 'updated_at', 'deleted_at','last_update_frequency'], 'safe'],
             [[
                 'user_id',
                 'email',
@@ -99,7 +100,7 @@ class NotificationConf extends ActiveRecord
             [['user_id'], 'required'],
         ];
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -118,7 +119,7 @@ class NotificationConf extends ActiveRecord
             'deleted_by' => AmosNotify::t('amosnotify', 'Deleted By')
         ];
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -133,7 +134,7 @@ class NotificationConf extends ActiveRecord
             ],
         ]);
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -141,7 +142,7 @@ class NotificationConf extends ActiveRecord
     {
         return $this->hasOne(AmosAdmin::instance()->model('User'), ['id' => 'user_id']);
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */

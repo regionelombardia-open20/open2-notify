@@ -9,11 +9,13 @@
  * @category   CategoryName
  */
 
+use open20\amos\notificationmanager\AmosNotify;
+
 /**
  * @var string $title
  */
 if($section_title or $section_description) {
-
+    $notifyModule = AmosNotify::instance();
 ?>
 
 <!-- TITOLO SEZIONE : BEGIN -->
@@ -22,8 +24,7 @@ if($section_title or $section_description) {
     <table cellspacing="0" cellpadding="0" border="0" align="center" class="email-container" width="100%" style="width:100%">
         <?php if ($section_title) { ?>
             <tr>
-                <td bgcolor="#297A38" style="font-family:sans-serif; color:#FFF; font-weight:bold; font-size:18px; padding:5px 10px; text-transform: uppercase; width:520px"><p style="margin:8px 0;"><?= ucfirst($section_title) ?></p></td>
-            </tr>
+	            <td bgcolor="<?= $notifyModule->mailThemeColor['bgPrimary'] ?>" style="font-family:sans-serif; color:#FFF; font-weight:bold; font-size:18px; padding:5px 10px; text-transform: uppercase; width:520px"><p style="margin:8px 0;"><?= ucfirst($section_title) ?></p></td>            </tr>
         <?php } // $section_title ?>
         <?php if ($section_description) { ?>
             <tr>

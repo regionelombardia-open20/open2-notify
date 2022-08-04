@@ -22,14 +22,14 @@ if(!empty($profile)) {
 $modelGrammar = $model->getGrammar();
 $articleSingular = $modelGrammar->getArticleSingular();
 $spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
-
+$notifyModule = AmosNotify::instance();
 ?>
 
 <div>
 
     <div style="box-sizing:border-box;color:#000000;">
         <div style="padding:5px 10px;background-color: #F2F2F2;text-align:center;">
-            <h1 style="color:#297A38;font-size:1.5em;margin:0;">
+	        <h1 style="color:<?= $notifyModule->mailThemeColor['bgPrimary'] ?>;font-size:1.5em;margin:0;">
                 <?= AmosNotify::t('amosnotify', '#validation_request_email_1') . ' ' . $articleSingular . $spaceAfterArticleSingular . strtolower($modelGrammar->getModelSingularLabel()) ?>
             </h1>
         </div>
@@ -46,7 +46,6 @@ $spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
             </div>
         </div>
 
-
         <div style="margin-top:20px; display: flex; padding: 10px;">
             <div
                 style="width: 50px; height: 50px; overflow: hidden;-webkit-border-radius: 50%; -moz-border-radius: 50%; border-radius: 50%;float: left;">
@@ -58,6 +57,10 @@ $spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
                 ?>
                 <?php
                 $user = $model->getCreatedUserProfile()->one();
+                if(get_class($model) ==  "open20\amos\admin\models\UserProfile"){
+                    $user = $model;
+                }
+
                 if(!is_null($user)){
                         echo \open20\amos\admin\widgets\UserCardWidget::widget([
                             'model' => $user,

@@ -69,13 +69,6 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
-    /**
-     *  disable notification for default behavior.
-     *  enable notification only with post parameter: saveNotificationSendEmail = 1
-     */
-    public $disableDefaultBehaviorClasses = [
-    ];
-
     public $orderEmailSummary = [
         'open20\amos\events\models\Event',
         'open20\amos\news\models\News',
@@ -89,6 +82,8 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $sleepingUserDayLimit = 30; // If the user is inactive for those days he is sleeping
     public $contentsLimit = 2;         // max items foreach content in email to userNotification
     public $usersLimit = 5;            // max users in email to userNotification (es max contatti, max visits)
+    public $enableNewsletter = false;
+    public $enableSuggestions = false;
 
     /**
      * @var null |string
@@ -125,6 +120,13 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
 
     public $contentToNotNotify = [];
 
+    public $mailThemeColor = [
+        'bgPrimary' => '#297A38',
+        'bgPrimaryDark' => '#204D28',
+        'textPrimary' => '#FFFFFF',
+        'textPrimaryDark' => '#FFFFFF'
+    ];
+
     /**
      * @inheritdoc
      */
@@ -153,6 +155,21 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public function init()
     {
         parent::init();
+        if (isset(Yii::$app->params['layoutMailConfigurations']['bgPrimary'])) {
+            $this->mailThemeColor['bgPrimary'] = Yii::$app->params['layoutMailConfigurations']['bgPrimary'];
+        }
+        if (isset(Yii::$app->params['layoutMailConfigurations']['bgPrimaryDark'])) {
+
+            $this->mailThemeColor['bgPrimaryDark'] = Yii::$app->params['layoutMailConfigurations']['bgPrimaryDark'];
+        }
+        if (isset(Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimary'])) {
+
+            $this->mailThemeColor['textContrastBgPrimary'] = Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimary'];
+        }
+        if (isset(Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimaryDark'])) {
+
+            $this->mailThemeColor['textContrastBgPrimaryDark'] = Yii::$app->params['layoutMailConfigurations']['textContrastBgPrimaryDark'];
+        }
         \Yii::setAlias('@open20/amos/notificationmanager/commands', __DIR__ . '/commands/');
         // initialize the module with the configuration loaded from config.php
         \Yii::configure($this, require(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'));

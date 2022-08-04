@@ -22,7 +22,6 @@ use Yii;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\db\ActiveRecord;
-use yii\helpers\VarDumper;
 use yii\log\Logger;
 use yii\web\Application;
 
@@ -311,10 +310,15 @@ class NotifyBehavior extends Behavior
                     } else {
                         $notify->updated_at = null;
                     }
-
                     if (!empty($notify)) {
-                        if ($notify->save(false)) {
-                            $this->saveNotificationContentLanguage($notify);
+                        $canSave = true;
+                        if ($model instanceof \open20\amos\core\interfaces\NotificationPersonalizedQueryInterface) {
+                            $canSave = $model->canSaveNotification();
+                        }
+                        if ($canSave) {
+                            if ($notify->save(false)) {
+                                $this->saveNotificationContentLanguage($notify);
+                            }
                         }
                     }
                 }
@@ -433,13 +437,6 @@ class NotifyBehavior extends Behavior
             $isSetPost     = isset($post);
         }
 
-        // On configuration we define models can notified only by post parameter.
-        // For this class, if isPostCorrect is false, exit... do nothing
-        $notificationOnlyOnPostParameter = in_array($modelClassName,$this->notifyModule->disableDefaultBehaviorClasses);
-        if ($notificationOnlyOnPostParameter && !$isPostCorrect) {
-            return true;
-        }
-
         // if you validate the content from outside the update pge of the content, the modal is not shown and che record of notification-send.email is always created
         if ($bypassCheckPostParam || $isPostCorrect || !$isSetPost) {
             if ($channel == NotificationChannels::CHANNEL_MAIL) {
@@ -471,10 +468,10 @@ class NotifyBehavior extends Behavior
     {
         try {
             $notify_content_language = null;
-            if ( !(\Yii::$app instanceof Yii\console\Application) ) {
+            if (!(\Yii::$app instanceof Yii\console\Application)) {
                 $notify_content_language = \Yii::$app->request->post('notify_content_language');
             }
-            $modelsclassname         = ModelsClassname::find()
+            $modelsclassname = ModelsClassname::find()
                     ->andWhere(['classname' => $notify->class_name])->one();
             if ($modelsclassname) {
                 if (!empty($notify_content_language)) {
@@ -495,5 +492,4 @@ class NotifyBehavior extends Behavior
             Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
-    
 }

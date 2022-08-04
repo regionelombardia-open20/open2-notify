@@ -34,13 +34,14 @@ class m191021_162413_create_notification_content_language extends Migration
                 'updated_by' =>  $this->integer()->comment('Updated at'),
                 'deleted_by' =>  $this->integer()->comment('Deleted at'),
             ], $this->db->driverName === 'mysql' ? 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB AUTO_INCREMENT=1' : null);
+
+            $this->addForeignKey('fk_notification_content_language_modelclss_id1', self::TABLE, 'models_classname_id', 'models_classname', 'id');
         }
         else
         {
             echo "Nessuna creazione eseguita in quanto la tabella esiste gia'";
         }
-
-            $this->addForeignKey('fk_notification_content_language_modelclss_id1', self::TABLE, 'models_classname_id', 'models_classname', 'id');
+            
 
     }
 
