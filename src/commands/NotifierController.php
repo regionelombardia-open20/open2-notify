@@ -15,6 +15,7 @@ use open20\amos\admin\AmosAdmin;
 use open20\amos\admin\base\ConfigurationManager;
 use open20\amos\admin\models\UserProfile;
 use open20\amos\core\interfaces\NotificationPersonalizedQueryInterface;
+use open20\amos\core\migration\libs\common\MigrationCommon;
 use open20\amos\core\models\ModelsClassname;
 use open20\amos\core\record\Record;
 use open20\amos\core\user\User;
@@ -551,6 +552,10 @@ class NotifierController extends Controller
             /** @var ActiveQuery $queryNewsletters */
             $queryNewsletters = $newsletterModel::find();
             $queryNewsletters->andWhere(['status' => [Newsletter::WORKFLOW_STATUS_WAIT_SEND, Newsletter::WORKFLOW_STATUS_WAIT_RESEND]]);
+            $queryNewsletters->andWhere(['or',
+                ['is', 'programmed_send_date_time', null],
+                ['<=', 'programmed_send_date_time', date('Y-m-d H:i:s')],
+            ]);
             $newslettersToBeNotified = $queryNewsletters->all();
             
             foreach ($newslettersToBeNotified as $newsletter) {
@@ -709,7 +714,7 @@ class NotifierController extends Controller
                             } else {
                                 Console::stdout('End working on user without interest ' . $uid . PHP_EOL);
                                 $transaction->commit();
-                                continue 2;
+                                continue;
                             }
                             $results[$typeOfNotify] = $query->all();
                             

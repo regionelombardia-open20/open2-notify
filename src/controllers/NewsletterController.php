@@ -331,7 +331,11 @@ class NewsletterController extends \open20\amos\notificationmanager\controllers\
         if ($this->model->setWaitSendNewsletter()) {
             $ok = NewsletterUtility::addNewsletterNotification($this->notifyModule, $this->model);
             if ($ok) {
-                \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_sent'));
+                if (!empty($this->model->programmed_send_date_time)) {
+                    \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_sent_programmed'));
+                } else {
+                    \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_sent'));
+                }
             } else {
                 $this->model->status = Newsletter::WORKFLOW_STATUS_DRAFT;
                 $this->model->save();
@@ -413,7 +417,11 @@ class NewsletterController extends \open20\amos\notificationmanager\controllers\
         if ($this->model->setWaitReSendNewsletter()) {
             $ok = NewsletterUtility::addNewsletterNotification($this->notifyModule, $this->model);
             if ($ok) {
-                \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_re_sent'));
+                if (!empty($this->model->programmed_send_date_time)) {
+                    \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_re_sent_programmed'));
+                } else {
+                    \Yii::$app->getSession()->addFlash('success', AmosNotify::txt('#newsletter_success_to_be_re_sent'));
+                }
             } else {
                 $this->model->setSentNewsletter(true);
                 \Yii::$app->getSession()->addFlash('danger', AmosNotify::txt('#error_cannot_save_newsletter_notification'));

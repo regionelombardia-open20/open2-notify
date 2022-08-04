@@ -71,9 +71,17 @@ $loggedUserIsNewsletterAdminstrator = \Yii::$app->user->can('NEWSLETTER_ADMINIST
                     }
                 ],
                 [
+                    'attribute' => 'programmed_send_date_time',
+                    'value' => function ($model) {
+                        /** @var Newsletter $model */
+                        return \Yii::$app->formatter->asDatetime($model->programmed_send_date_time, 'humanalwaysdatetime');
+                    }
+                ],
+                [
                     'class' => 'open20\amos\core\views\grid\ActionColumn',
                     'template' => '{reSendNewsletter}{sendNewsletter}{sendTestNewsletter}{stopSendNewsletter}{view}{update}{delete}',
                     'beforeRenderParent' => function ($model, $key, $index, $caller) {
+                        /** @var \open20\amos\notificationmanager\models\Newsletter $model */
                         return [
                             'allContentsPublished' => $model->checkAllContentsPublished(),
                             'userCanUpdateThisNewsletter' => $model->userCanUpdateThisNewsletter(),
