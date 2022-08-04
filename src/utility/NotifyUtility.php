@@ -20,6 +20,7 @@ use open20\amos\core\models\ModelsClassname;
 use open20\amos\core\user\User;
 use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\notificationmanager\base\BuilderFactory;
+use open20\amos\notificationmanager\models\base\NotificationConfContent;
 use open20\amos\notificationmanager\models\NotificationConf;
 use open20\amos\notificationmanager\models\NotificationconfNetwork;
 use open20\amos\notificationmanager\models\NotificationLanguagePreferences;
@@ -153,12 +154,33 @@ class NotifyUtility extends BaseObject
                 $notifyLangPreferences->save(false);
             }
         }
-        
+
         $ok = $notificationConf->save();
+
+        if(isset($params['notify_contents'])){
+            $this->saveNotificationConfContent($notificationConf, $params['notify_contents']);
+        }
         $this->saveNetworkNotification($userId, $params);
         return $ok;
     }
-    
+
+    /**
+     * @param $notificationConf
+     * @param $params
+     */
+    public function saveNotificationConfContent($notificationConf, $params){
+        NotificationConfContent::deleteAll(['notification_conf_id' => $notificationConf->id]);
+
+        foreach ($params as $contentClassId => $configs){
+            $conf = new NotificationConfContent();
+            $conf->notification_conf_id = $notificationConf->id;
+            $conf->models_classname_id = $contentClassId;
+            $conf->push_notification = !empty($configs['push']) ? $configs['push'] : 0;
+            $conf->email = !empty($configs['email']) ? $configs['email'] : 0;
+            $conf->save(false);
+        }
+    }
+
     /**
      * @param $userId
      * @param $params

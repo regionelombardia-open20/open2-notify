@@ -16,7 +16,6 @@ use open20\amos\core\interfaces\ModelLabelsInterface;
 use open20\amos\core\interfaces\NewsletterInterface;
 use open20\amos\core\record\Record;
 use open20\amos\core\views\AmosGridView;
-use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\notificationmanager\controllers\NewsletterController;
 use open20\amos\notificationmanager\models\Newsletter;
 use open20\amos\notificationmanager\models\NewsletterContents;
@@ -43,7 +42,7 @@ $newsletterContentsConfs = $newsletterContentsConfModel::find()->orderBy(['order
 ?>
 <div class="event-room-view col-xs-12 m-t-5">
     <div class="row">
-        <div class="col-xs-12 m-b-5 m-t-5">
+        <div class="col-xs-12 m-b-5">
             <?= ContextMenuWidget::widget([
                 'model' => $model,
                 'actionModify' => $model->getFullUpdateUrl(),
@@ -55,9 +54,6 @@ $newsletterContentsConfs = $newsletterContentsConfModel::find()->orderBy(['order
         <div class="header col-xs-12 nop">
             <div class="title col-xs-12">
                 <h2 class="title-text"><?= $model->subject ?></h2>
-                <?php if (!empty($model->programmed_send_date_time)): ?>
-                    <div class="title-text"><?= $model->getAttributeLabel('programmed_send_date_time') . ': ' . \Yii::$app->formatter->asDatetime($model->programmed_send_date_time, 'humanalwaysdatetime') ?></div>
-                <?php endif; ?>
             </div>
         </div>
     </div>

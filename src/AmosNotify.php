@@ -116,6 +116,8 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      */
     public $customIconPlugins = [];
 
+    public $contentToNotNotify = [];
+
     /**
      * @inheritdoc
      */
@@ -189,6 +191,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             'NotificationSendEmail' => __NAMESPACE__ . '\\' . 'models\NotificationSendEmail',
             'NotificationsRead' => __NAMESPACE__ . '\\' . 'models\NotificationsRead',
             'NotificationsSent' => __NAMESPACE__ . '\\' . 'models\NotificationsSent',
+            'NotificationConfContent' => __NAMESPACE__ . '\\' . 'models\NotificationConfContent',
         ];
     }
 

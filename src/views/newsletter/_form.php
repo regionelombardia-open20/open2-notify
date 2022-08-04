@@ -23,7 +23,6 @@ use open20\amos\notificationmanager\controllers\NewsletterController;
 use open20\amos\notificationmanager\models\NewsletterContents;
 use open20\amos\notificationmanager\models\NewsletterContentsConf;
 use kartik\alert\Alert;
-use kartik\datecontrol\DateControl;
 use yii\base\NotSupportedException;
 use yii\db\ActiveQuery;
 
@@ -50,16 +49,9 @@ $appController = Yii::$app->controller;
     
     <?php $this->beginBlock('general'); ?>
     <div class="row">
-        <div class="col-md-8 col xs-12">
+        <div class="col-md-10 col xs-12">
             <?= $form->field($model, 'subject')->textInput(['maxlength' => true]) ?>
         </div>
-        <?php if (!$model->isNewRecord): ?>
-            <div class="col-md-4 col xs-12">
-                <?= $form->field($model, 'programmed_send_date_time')->widget(DateControl::className(), [
-                    'type' => DateControl::FORMAT_DATETIME
-                ])->hint(AmosNotify::t('amosnotify', '#programmed_send_date_time_hint')); ?>
-            </div>
-        <?php endif; ?>
     </div>
     <div class="row">
         <?php if ($model->isNewRecord): ?>
@@ -137,8 +129,6 @@ $appController = Yii::$app->controller;
                         ],
                         'gridId' => 'm2m-grid-' . $contentConfModelTable,
                         'btnAssociaLabel' => $btnAssociaLabel,
-                        'btnAssociaId' => 'm2m-widget-btn-associa-' . strtolower($modelLabel),
-                        'btnAssociaConfirm' => AmosNotify::txt('#newsletter_leave_form_confirm_message'),
                         'targetUrl' => '/notify/newsletter/associa-m2m',
                         'moduleClassName' => AmosNotify::className(),
                         'targetUrlController' => 'newsletter',

@@ -149,4 +149,11 @@ class NotificationConf extends ActiveRecord
     {
         return $this->hasMany($this->notifyModule->model('NotificationLanguagePreferences'), ['user_id' => 'user_id']);
     }
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNotificationConfContents()
+    {
+        return $this->hasMany($this->notifyModule->model('NotificationConfContent'), ['notification_conf_id' => 'id']);
+    }
 }

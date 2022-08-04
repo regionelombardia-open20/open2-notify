@@ -185,113 +185,111 @@ $this->registerJs($js);
         <label class="control-label"><?= AmosNotify::t('amosnotify', 'Con quale frequenza desideri ricevere aggiornamenti relativi alle visualizzazioni del tuo profilo?') ?></label>
         <?= $htmlProfiloSuccessoEmailFrequencySelector ?>
     </div>
-    <div class="col-xs-12">
     <?php
-        if (!empty($dataProviderNetwork)) {
-            echo "<p>" . AmosNotify::t('amosnotify',
-                    'Con quale frequenza desideri ricevere aggiornamenti dalla piattaforma per la pubblicazione di un nuovo contenuto di tuo interesse all’interno delle community?') . "</p>";
-            echo \open20\amos\core\views\AmosGridView::widget([
-                'dataProvider' => $dataProviderNetwork,
-                'columns' => [
-                    'logo_id' => [
-                        'headerOptions' => [
-                            'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
-                        ],
-                        'contentOptions' => [
-                            'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
-                        ],
-                        'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            return \open20\amos\community\widgets\CommunityCardWidget::widget(['model' => $model]);
+    if (!empty($dataProviderNetwork)) {
+        echo "<p>" . AmosNotify::t('amosnotify',
+                'Con quale frequenza desideri ricevere aggiornamenti dalla piattaforma per la pubblicazione di un nuovo contenuto di tuo interesse all’interno delle community?') . "</p>";
+        echo \open20\amos\core\views\AmosGridView::widget([
+            'dataProvider' => $dataProviderNetwork,
+            'columns' => [
+                'logo_id' => [
+                    'headerOptions' => [
+                        'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
+                    ],
+                    'contentOptions' => [
+                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
+                    ],
+                    'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Logo'),
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        return \open20\amos\community\widgets\CommunityCardWidget::widget(['model' => $model]);
+                    }
+                ],
+                [
+                    'attribute' => 'name',
+                    'format' => 'html',
+                    'value' => function ($model) {
+                        /** @var \open20\amos\community\models\Community $model */
+                        return Html::a($model->name, ['/community/community/view', 'id' => $model->id], [
+                            'title' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Apri il profilo della community {community_name}', ['community_name' => $model->name])
+                        ]);
+                    }
+                ],
+                'communityType' => [
+                    'attribute' => 'communityType',
+                    'format' => 'html',
+                    'value' => function ($model) {
+                        /** @var \open20\amos\community\models\Community $model */
+                        if (!is_null($model->community_type_id)) {
+                            return \open20\amos\community\AmosCommunity::t('amoscommunity', $model->communityType->name);
+                        } else {
+                            return '-';
                         }
-                    ],
-                    [
-                        'attribute' => 'name',
-                        'format' => 'html',
-                        'value' => function ($model) {
-                            /** @var \open20\amos\community\models\Community $model */
-                            return Html::a($model->name, ['/community/community/view', 'id' => $model->id], [
-                                'title' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Apri il profilo della community {community_name}', ['community_name' => $model->name])
-                            ]);
-                        }
-                    ],
-                    'communityType' => [
-                        'attribute' => 'communityType',
-                        'format' => 'html',
-                        'value' => function ($model) {
-                            /** @var \open20\amos\community\models\Community $model */
-                            if (!is_null($model->community_type_id)) {
-                                return \open20\amos\community\AmosCommunity::t('amoscommunity', $model->communityType->name);
-                            } else {
-                                return '-';
-                            }
-                        }
-                    ],
-                    [
-                        'label' => AmosNotify::t('amosnotify', 'Frequency'),
-                        'value' => function ($model) use ($widgetConfData, $notificationNetworkValues) {
-                            return \kartik\select2\Select2::widget([
-                                'data' => $widgetConfData,
-                                'name' => 'notifyCommunity[' . $model->id . ']',
-                                'value' => !empty($notificationNetworkValues[$model->id]) ? $notificationNetworkValues[$model->id] : null,
-                                'options' => [
-                                    'lang' => substr(\Yii::$app->language, 0, 2),
-                                    'multiple' => false,
-                                    'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
-                                ]
-                            ]);
-                        },
-                        'format' => 'raw'
-                    ],
-    //                'created_by' => [
-    //                    'attribute' => 'created_by',
-    //                    'format' => 'html',
-    //                    'value' => function($model){
-    //                        /** @var \open20\amos\community\models\Community $model */
-    //                        $name = '-';
-    //                        if(!is_null($model->created_by)) {
-    //                            $creator = \open20\amos\core\user\User::findOne($model->created_by);
-    //                            if(!empty($creator)) {
-    //                                return $creator->getProfile()->getNomeCognome();
-    //                            }
-    //                        }
-    //                        return $name;
-    //                    }
-    //                ],
-    //                'status' => [
-    //                    'attribute' => 'status',
-    //                    'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
-    //                    'headerOptions' => [
-    //                        'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
-    //                    ],
-    //                    'contentOptions' => [
-    //                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
-    //                    ],
-    //                    'value' => function($model)use ($widget){
-    //                        /** @var \open20\amos\community\models\Community $model */
-    //                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' => $widgetModel->user_id, 'community_id' => $model->id]);
-    //                        return  $mmrow->status;
-    //                    }
-    //                ],
-    //                'role' => [
-    //                    'attribute' => 'role',
-    //                    'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
-    //                    'headerOptions' => [
-    //                        'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
-    //                    ],
-    //                    'contentOptions' => [
-    //                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
-    //                    ],
-    //                    'value' => function($model) use ($widget){
-    //                        /** @var \open20\amos\community\models\Community $model */
-    //                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' =>  $widgetModel->user_id, 'community_id' => $model->id]);
-    //                        return  $mmrow->role;
-    //                    }
-    //                ],
-                ]
-            ]);
-        }
-        ?>
-    </div>
+                    }
+                ],
+                [
+                    'label' => AmosNotify::t('amosnotify', 'Frequency'),
+                    'value' => function ($model) use ($widgetConfData, $notificationNetworkValues) {
+                        return \kartik\select2\Select2::widget([
+                            'data' => $widgetConfData,
+                            'name' => 'notifyCommunity[' . $model->id . ']',
+                            'value' => !empty($notificationNetworkValues[$model->id]) ? $notificationNetworkValues[$model->id] : null,
+                            'options' => [
+                                'lang' => substr(\Yii::$app->language, 0, 2),
+                                'multiple' => false,
+                                'placeholder' => AmosNotify::t('amosnotify', 'Select/Choose') . '...',
+                            ]
+                        ]);
+                    },
+                    'format' => 'raw'
+                ],
+//                'created_by' => [
+//                    'attribute' => 'created_by',
+//                    'format' => 'html',
+//                    'value' => function($model){
+//                        /** @var \open20\amos\community\models\Community $model */
+//                        $name = '-';
+//                        if(!is_null($model->created_by)) {
+//                            $creator = \open20\amos\core\user\User::findOne($model->created_by);
+//                            if(!empty($creator)) {
+//                                return $creator->getProfile()->getNomeCognome();
+//                            }
+//                        }
+//                        return $name;
+//                    }
+//                ],
+//                'status' => [
+//                    'attribute' => 'status',
+//                    'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
+//                    'headerOptions' => [
+//                        'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
+//                    ],
+//                    'contentOptions' => [
+//                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Status'),
+//                    ],
+//                    'value' => function($model)use ($widget){
+//                        /** @var \open20\amos\community\models\Community $model */
+//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' => $widgetModel->user_id, 'community_id' => $model->id]);
+//                        return  $mmrow->status;
+//                    }
+//                ],
+//                'role' => [
+//                    'attribute' => 'role',
+//                    'label' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
+//                    'headerOptions' => [
+//                        'id' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
+//                    ],
+//                    'contentOptions' => [
+//                        'headers' => \open20\amos\community\AmosCommunity::t('amoscommunity', 'Role'),
+//                    ],
+//                    'value' => function($model) use ($widget){
+//                        /** @var \open20\amos\community\models\Community $model */
+//                        $mmrow = \open20\amos\community\models\CommunityUserMm::findOne(['user_id' =>  $widgetModel->user_id, 'community_id' => $model->id]);
+//                        return  $mmrow->role;
+//                    }
+//                ],
+            ]
+        ]);
+    }
+    ?>
 </div>

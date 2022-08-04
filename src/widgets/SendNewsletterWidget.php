@@ -51,11 +51,6 @@ class SendNewsletterWidget extends Widget
     private $autoRegisterJavascript = true;
     
     /**
-     * @var bool $isProgrammedNewsletter
-     */
-    private $isProgrammedNewsletter = false;
-    
-    /**
      * @throws NewsletterException
      */
     public function init()
@@ -73,8 +68,6 @@ class SendNewsletterWidget extends Widget
         if (!$this->buttonType) {
             throw new NewsletterException(AmosNotify::t('amosnotify', '#send_newsletter_widget_missing_button_type'));
         }
-        
-        $this->isProgrammedNewsletter = !empty($this->model->programmed_send_date_time);
     }
     
     /**
@@ -272,21 +265,11 @@ class SendNewsletterWidget extends Widget
      */
     protected function renderSendNewsletter()
     {
-        if ($this->isProgrammedNewsletter) {
-            $btnTitle = AmosNotify::txt('#send_newsletter_btn_text_programmed');
-            $modalHeader = AmosNotify::txt('#send_newsletter_widget_modal_header_text_programmed');
-            $modalDescriptionText = AmosNotify::txt('#send_newsletter_modal_text_programmed', [
-                'programmed_send_date_time' => \Yii::$app->formatter->asDatetime($this->model->programmed_send_date_time, 'humanalwaysdatetime')
-            ]);
-        } else {
-            $btnTitle = AmosNotify::txt('#send_newsletter_btn_text');
-            $modalHeader = AmosNotify::txt('#send_newsletter_widget_modal_header_text');
-            $modalDescriptionText = AmosNotify::txt('#send_newsletter_modal_text');
-        }
+        $btnTitle = AmosNotify::txt('#send_newsletter_btn_text');
         return ModalUtility::addConfirmRejectWithModal([
             'modalId' => 'send-newsletter-modal-id-' . $this->model->id,
-            'modalHeader' => $modalHeader,
-            'modalDescriptionText' => $modalDescriptionText,
+            'modalHeader' => AmosNotify::txt('#send_newsletter_widget_modal_header_text'),
+            'modalDescriptionText' => AmosNotify::txt('#send_newsletter_modal_text'),
             'btnText' => $btnTitle,
             'btnLink' => ['/notify/newsletter/send-newsletter', 'id' => $this->model->id],
             'btnOptions' => [

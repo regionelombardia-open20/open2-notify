@@ -22,7 +22,6 @@ use open20\amos\notificationmanager\AmosNotify;
  * @property integer $id
  * @property string $status
  * @property string $subject
- * @property string $programmed_send_date_time
  * @property string $send_date_begin
  * @property string $send_date_end
  * @property string $created_at
@@ -67,10 +66,9 @@ abstract class Newsletter extends Record
     {
         return [
             [['status', 'subject'], 'required'],
-            [['programmed_send_date_time', 'send_date_begin', 'send_date_end', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['send_date_begin', 'send_date_end', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['status', 'subject'], 'string', 'max' => 255],
-            ['programmed_send_date_time', 'compare', 'compareValue' => date('Y-m-d H:i:s'), 'operator' => '>=', 'message' => AmosNotify::txt('#programmed_send_date_time_major_than_now')],
         ];
     }
 
@@ -83,7 +81,6 @@ abstract class Newsletter extends Record
             'id' => AmosNotify::t('amosnotify', 'ID'),
             'status' => AmosNotify::t('amosnotify', '#newsletter_status'),
             'subject' => AmosNotify::t('amosnotify', '#newsletter_subject'),
-            'programmed_send_date_time' => AmosNotify::t('amosnotify', '#programmed_send_date_time'),
             'send_date_begin' => AmosNotify::t('amosnotify', '#newsletter_send_date_begin'),
             'send_date_end' => AmosNotify::t('amosnotify', '#newsletter_send_date_end'),
             'created_at' => AmosNotify::t('amosnotify', '#creation_date'),
