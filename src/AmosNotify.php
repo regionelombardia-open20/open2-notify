@@ -58,6 +58,7 @@ use raoul2000\workflow\base\SimpleWorkflowBehavior;
 use Yii;
 use yii\base\Event;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 use yii\log\Logger;
 
 /**
@@ -137,7 +138,16 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $customIconPlugins = [];
 
     public $contentToNotNotify = [];
-    
+
+    /**
+     * ActiveRecord events on which the behavior should trigger notifications
+     * @var array $eventsToNotify
+     */
+    public $eventsToNotify = [
+        ActiveRecord::EVENT_AFTER_INSERT,
+        ActiveRecord::EVENT_AFTER_UPDATE,
+    ];
+
     /**
      * @var string[] $mailThemeColor
      */

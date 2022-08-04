@@ -241,10 +241,12 @@ class NotifierController extends Controller
             $query->andWhere([UserProfile::tableName().'.deleted_at' => null]);
             $query->andWhere([UserProfile::tableName().'.attivo' => UserProfile::STATUS_ACTIVE]);
             $query->andWhere([User::tableName().'.status' => User::STATUS_ACTIVE]);
+            $checkPrivacy = false;
             if (
                 $adminModule->confManager->isVisibleBox('box_privacy', ConfigurationManager::VIEW_TYPE_FORM) &&
                 $adminModule->confManager->isVisibleField('privacy', ConfigurationManager::VIEW_TYPE_FORM)
             ) {
+                $checkPrivacy = true;
                 $query->andWhere([UserProfile::tableName().'.privacy' => 1]);
             }
 
@@ -281,6 +283,9 @@ class NotifierController extends Controller
                 if ($useSegmentation == true) {
                     $queryConfCommunity->andWhere(['>', UserProfile::tableName().'.user_id', $offset]);
                     $queryConfCommunity->andWhere(['<=', UserProfile::tableName().'.user_id', $limit]);
+                }
+                if($checkPrivacy == true){
+                     $queryConfCommunity->andWhere([UserProfile::tableName().'.privacy' => 1]);
                 }
             }
 
@@ -449,10 +454,19 @@ class NotifierController extends Controller
                                     foreach ($networkConfArray as $classname_id => $record_id) {
 
                                         if (!empty($classname_id) && !empty($record_id)) {
-                                            $query->andWhere([
-                                                'AND',
-                                                ['!=', 'models_classname_id', $classname_id],
-                                                ['!=', 'record_id', $record_id]
+                                            $query->andWhere(['or',
+                                                [
+                                                    'AND',
+                                                    ['models_classname_id' => $classname_id],
+                                                    ['!=', 'record_id', $record_id]
+                                                ],
+                                                ['and',
+                                                    ['!=', 'models_classname_id', $classname_id],
+                                                ],
+                                                ['or',
+                                                    ['IS', 'models_classname_id', null],
+                                                    ['IS', 'record_id', null],
+                                                ],
                                             ]);
                                         }
                                     }
@@ -1072,10 +1086,19 @@ class NotifierController extends Controller
                         foreach ($networkConfArray as $classname_id => $record_id) {
 
                             if (!empty($classname_id) && !empty($record_id)) {
-                                $query->andWhere([
-                                    'AND',
-                                    ['OR', ['!=', 'models_classname_id', $classname_id], ['IS', 'models_classname_id', null]],
-                                    ['OR', ['!=', 'record_id', $record_id], ['IS', 'record_id', null]]
+                                $query->andWhere(['or',
+                                    [
+                                        'AND',
+                                        ['models_classname_id' => $classname_id],
+                                        ['!=', 'record_id', $record_id]
+                                    ],
+                                    ['and',
+                                        ['!=', 'models_classname_id', $classname_id],
+                                    ],
+                                    ['or',
+                                        ['IS', 'models_classname_id', null],
+                                        ['IS', 'record_id', null],
+                                    ],
                                 ]);
                             }
                         }

@@ -57,9 +57,9 @@ class NotifyBehavior extends Behavior
      */
     public function init()
     {
+        $this->notifyModule = AmosNotify::instance();
         $this->notificationInit();
         parent::init();
-        $this->notifyModule = AmosNotify::instance();
     }
 
     /**
@@ -89,10 +89,7 @@ class NotifyBehavior extends Behavior
     {
         $events = $this->getEvents();
         if (empty($events)) {
-            $this->setEvents([
-                ActiveRecord::EVENT_AFTER_INSERT,
-                ActiveRecord::EVENT_AFTER_UPDATE,
-            ]);
+            $this->setEvents($this->notifyModule->eventsToNotify);
         }
     }
 
@@ -360,9 +357,21 @@ class NotifyBehavior extends Behavior
             return true;
         }
 
+        // questo controllo è pilotato da  un modale di conferma in nel transitionwidget di amos-workflow
+        // se è settato il parametro in post ed è true vuoldire che sono stati modificati dei campi, se zero nn è stato modificato niente
+        // se nn c'è il parametro in post, viene fatto il controllo lato server
+        $createUpdateNotification = \Yii::$app->request->post('createUpdateNotification');
+        if (!is_null($createUpdateNotification)) {
+            if($createUpdateNotification){
+                return true;
+            }
+            return false;
+        }
+
+
         foreach ((Array)$this->modelOldAttributes as $oldAttribute => $value) {
             if (!in_array($oldAttribute,
-                ['created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by'])) {
+                ['id', 'created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by'])) {
                 if ($model->attributes[$oldAttribute] != $value) {
                     $modelIsChanged = true;
                 }
