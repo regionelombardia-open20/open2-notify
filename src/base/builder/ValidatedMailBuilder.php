@@ -125,7 +125,7 @@ class ValidatedMailBuilder extends AMailBuilder
                 $ris = $this->renderView(\Yii::$app->controller->module->name, "validated_content_email", $params);
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         return $ris;

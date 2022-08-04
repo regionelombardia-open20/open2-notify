@@ -23,6 +23,7 @@ use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
 use yii\db\Query;
+use yii\helpers\VarDumper;
 use yii\log\Logger;
 
 /**
@@ -65,7 +66,7 @@ class NotifierRepository
                 ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         
         return $result;
@@ -103,7 +104,7 @@ class NotifierRepository
                 ]);
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         
         return $result > 0;
@@ -152,7 +153,7 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
             $allOk = false;
         }
         
@@ -208,7 +209,7 @@ class NotifierRepository
                 }
             }
         } catch (\yii\base\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         
         return $allOk;
@@ -275,9 +276,49 @@ class NotifierRepository
             
             $result = $query->scalar();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         
         return ($result > 0);
     }
+
+    /**
+     * @param Record $model
+     * @param int|null $uid
+     * @return bool
+     */
+    public function getAllFavourites($class_name, $uid = null)
+    {
+        $result = 0;
+        $userId = $uid;
+        
+        try {
+            if ($uid === null) {
+                /** @var AmosUser $user */
+                $user = Yii::$app->user->identity;
+                $userId = $user->profile->id;
+            }
+            
+            $query = new Query();
+            $query
+                ->distinct()
+                ->select('a.content_id')
+                ->from(Notification::tableName() . ' a')
+                ->innerJoin(
+                    NotificationsRead::tableName() . ' b', 
+                    'a.id = b.notification_id and b.user_id = ' . $userId . ' '
+                )
+                ->andWhere([
+                    'a.channels' => NotificationChannels::CHANNEL_FAVOURITES, 
+                    'a.class_name' => $class_name]
+                );
+                
+            $result = $query->all();
+        } catch (Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+        }
+        
+        return $result;
+    }
+
 }

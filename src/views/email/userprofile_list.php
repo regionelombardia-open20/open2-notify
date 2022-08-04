@@ -41,7 +41,7 @@ if (!empty($profile)) {
                         <?= Html::a($model->getNomeCognome(), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #000; text-decoration:none;']) ?>
                     </td>
                     <td colspan="2" style="font-size:18px; font-weight:bold; padding: 5px 0 ; font-family: sans-serif;">
-                        <?= Html::a(Yii::t('amosnotify', "#collegati"), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #000; text-decoration:none;']) ?>
+                        <?= Html::a(Yii::t('amosnotify', "collegati"), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #000; text-decoration:none;']) ?>
                     </td>
                 </tr>
                 <tr>

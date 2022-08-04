@@ -85,7 +85,7 @@ class UserNotificationController extends NotifierController
 
             Console::stdout('End successful-user ' . $type . PHP_EOL);
 //        } catch (Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
     } //actionSuccessfulUser
 
@@ -233,7 +233,7 @@ class UserNotificationController extends NotifierController
 
             Console::stdout('End suggested-link ' . $type . PHP_EOL);
 //        } catch (Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
     } // actionSuggestedLink
     
@@ -650,7 +650,7 @@ class UserNotificationController extends NotifierController
 
             Console::stdout('End successful-content ' . $type . PHP_EOL);
 //        } catch (Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
     }
     
@@ -942,7 +942,7 @@ class UserNotificationController extends NotifierController
             $this->notifyToSleepingUsers($users, $builder, $type);
             Console::stdout('End sleeping-user ' . PHP_EOL);
 //        } catch (Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
     }
     
@@ -1098,7 +1098,7 @@ class UserNotificationController extends NotifierController
 
             $result = $query->all();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         return $result;
     }
@@ -1151,7 +1151,7 @@ class UserNotificationController extends NotifierController
             
             $result = $query->all();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
         return $result;
     }
@@ -1180,7 +1180,7 @@ class UserNotificationController extends NotifierController
             Console::stdout('notifySentOnlyLast: prima del save' . PHP_EOL);// die();
             $model->save(); // for update modify_at
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
     

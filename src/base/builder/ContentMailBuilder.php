@@ -62,7 +62,7 @@ class ContentMailBuilder extends AMailBuilder
             }
             $mail .= $this->renderContentFooter($resultset, $user);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         
         return $mail;
@@ -152,6 +152,7 @@ class ContentMailBuilder extends AMailBuilder
         $icon = NotifyUtility::getIconPlugins(get_class($model), 'white');
         
         $controller = \Yii::$app->controller;
+      
         $view = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_title", [
             'title' => $model->getGrammar()->getModelLabel(),
             'icon' => $icon
@@ -262,8 +263,8 @@ class ContentMailBuilder extends AMailBuilder
             $mail .= $this->renderSectionWithScope($resultSetNetwork, $resultSetComments, $user);
             
             $mail .= $this->renderContentFooter($resultSetNormal, $user);
-        } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+        } catch (\Exception $ex) {print_r($ex->getMessage());print_r('#######');print_r($ex->getTraceAsString());die('sdfaòaa');
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         
         return $mail;
@@ -476,7 +477,7 @@ class ContentMailBuilder extends AMailBuilder
         $mail .= $this->renderContentFooter($resultSetNormal, $user);
 
 //        } catch (\Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
         
         return $mail;

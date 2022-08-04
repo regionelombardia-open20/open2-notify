@@ -55,13 +55,13 @@ use yii\log\Logger;
  */
 class NotifierController extends Controller
 {
-    public $weekMails = false;
-    public $dayMails = false;
-    public $monthMails = false;
+    public $weekMails      = false;
+    public $dayMails       = false;
+    public $monthMails     = false;
     public $immediateMails = false;
 
-    const TYPE_OF_SECTION_NORMAL = 'normal';
-    const TYPE_OF_SECTION_NETWORK = 'network';
+    const TYPE_OF_SECTION_NORMAL   = 'normal';
+    const TYPE_OF_SECTION_NETWORK  = 'network';
     const TYPE_OF_SECTION_COMMENTS = 'comments';
 
     /**
@@ -96,13 +96,13 @@ class NotifierController extends Controller
             if ($this->notifyModule && $this->notifyModule->enableNotificationContentLanguage) {
                 $this->mailChannelWithLanguage();
             } else {
-                $type = $this->evaluateOperations();
-                Console::stdout('Begin mail-channel ' . $type . PHP_EOL);
+                $type  = $this->evaluateOperations();
+                Console::stdout('Begin mail-channel '.$type.PHP_EOL);
                 $users = $this->loadUser($type);
 
                 $factory = new BuilderFactory();
                 if ($type == NotificationsConfOpt::EMAIL_IMMEDIATE) {
-                    Console::stdout('BUILD ' . $type . PHP_EOL);
+                    Console::stdout('BUILD '.$type.PHP_EOL);
                     $builder = $factory->create(BuilderFactory::CONTENT_IMMEDIATE_MAIL_BUILDER);
                 } else {
                     $builder = $factory->create(BuilderFactory::CONTENT_MAIL_BUILDER);
@@ -111,10 +111,10 @@ class NotifierController extends Controller
                 /** @var AmosCwh $cwhModule */
                 $cwhModule = Yii::$app->getModule('cwh');
                 $this->notifyUserArray($cwhModule, $users, $builder, $type);
-                Console::stdout('End mail-channel ' . $type . PHP_EOL);
+                Console::stdout('End mail-channel '.$type.PHP_EOL);
             }
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -134,7 +134,7 @@ class NotifierController extends Controller
             $this->notifyUserArrayNewsletter($cwhModule, $users, $builder);
             Console::stdout('End newsletter-channel ' . PHP_EOL);
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -143,19 +143,19 @@ class NotifierController extends Controller
      */
     public function mailChannelWithLanguage()
     {
-        $type = $this->evaluateOperations();
+        $type      = $this->evaluateOperations();
         $languages = Language::find()->andWhere(['status' => 1])->all();
-        Console::stdout('Begin mail-channel ' . $type . PHP_EOL);
+        Console::stdout('Begin mail-channel '.$type.PHP_EOL);
         foreach ($languages as $language) {
-            Console::stdout('     ' . PHP_EOL);
-            Console::stdout('#################' . PHP_EOL);
-            Console::stdout('Lingua: ' . $language->language_id . " ###" . PHP_EOL);
-            Console::stdout('#################' . PHP_EOL);
+            Console::stdout('     '.PHP_EOL);
+            Console::stdout('#################'.PHP_EOL);
+            Console::stdout('Lingua: '.$language->language_id." ###".PHP_EOL);
+            Console::stdout('#################'.PHP_EOL);
             $users = $this->loadUser($type, $language);
 
             $factory = new BuilderFactory();
             if ($type == NotificationsConfOpt::EMAIL_IMMEDIATE) {
-                Console::stdout('BUILD ' . $type . PHP_EOL);
+                Console::stdout('BUILD '.$type.PHP_EOL);
                 $builder = $factory->create(BuilderFactory::CONTENT_IMMEDIATE_MAIL_BUILDER);
             } else {
                 $builder = $factory->create(BuilderFactory::CONTENT_MAIL_BUILDER);
@@ -164,7 +164,7 @@ class NotifierController extends Controller
             $cwhModule = Yii::$app->getModule('cwh');
             $this->notifyUserArray($cwhModule, $users, $builder, $type, $language->language_id);
         }
-        Console::stdout('End mail-channel ' . $type . PHP_EOL);
+        Console::stdout('End mail-channel '.$type.PHP_EOL);
     }
 
     /**
@@ -175,7 +175,7 @@ class NotifierController extends Controller
         try {
 
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
     }
 
@@ -187,12 +187,12 @@ class NotifierController extends Controller
     {
         try {
             /** @var NotificationsRead $model */
-            $model = $this->notifyModule->createModel('NotificationsRead');
+            $model                  = $this->notifyModule->createModel('NotificationsRead');
             $model->notification_id = $notify_id;
-            $model->user_id = $reader_id;
+            $model->user_id         = $reader_id;
             $model->save(false);
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -204,16 +204,19 @@ class NotifierController extends Controller
     {
         $result = null;
         try {
+            $module      = AmosNotify::getInstance();
             /** @var AmosAdmin $adminModule */
             $adminModule = Yii::$app->getModule('admin');
 
             $query = new Query();
             $query->from(UserProfile::tableName());
-            $query->innerJoin(User::tableName(), UserProfile::tableName() . '.user_id = ' . User::tableName() . '.id');
-            $query->leftJoin(NotificationConf::tableName(), NotificationConf::tableName() . '.user_id = ' . UserProfile::tableName() . '.user_id');
+            $query->innerJoin(User::tableName(), UserProfile::tableName().'.user_id = '.User::tableName().'.id');
+            $query->leftJoin(NotificationConf::tableName(),
+                NotificationConf::tableName().'.user_id = '.UserProfile::tableName().'.user_id');
 
             if ($this->notifyModule->enableNotificationContentLanguage) {
-                $query->leftJoin('notification_language_preferences', 'notification_language_preferences.user_id = ' . UserProfile::tableName() . '.user_id');
+                $query->leftJoin('notification_language_preferences',
+                    'notification_language_preferences.user_id = '.UserProfile::tableName().'.user_id');
                 $query->andWhere(['OR',
                     ['notification_language_preferences.language' => $language->language_id],
                     ['notification_language_preferences.language' => null]
@@ -221,17 +224,17 @@ class NotifierController extends Controller
             }
 
             $query->andWhere(['OR',
-                [NotificationConf::tableName() . '.notifications_enabled' => 1],
-                [NotificationConf::tableName() . '.notifications_enabled' => NULL],
+                [NotificationConf::tableName().'.notifications_enabled' => 1],
+                [NotificationConf::tableName().'.notifications_enabled' => NULL],
             ]);
-            $query->andWhere([UserProfile::tableName() . '.deleted_at' => null]);
-            $query->andWhere([UserProfile::tableName() . '.attivo' => UserProfile::STATUS_ACTIVE]);
-            $query->andWhere([User::tableName() . '.status' => User::STATUS_ACTIVE]);
+            $query->andWhere([UserProfile::tableName().'.deleted_at' => null]);
+            $query->andWhere([UserProfile::tableName().'.attivo' => UserProfile::STATUS_ACTIVE]);
+            $query->andWhere([User::tableName().'.status' => User::STATUS_ACTIVE]);
             if (
                 $adminModule->confManager->isVisibleBox('box_privacy', ConfigurationManager::VIEW_TYPE_FORM) &&
                 $adminModule->confManager->isVisibleField('privacy', ConfigurationManager::VIEW_TYPE_FORM)
             ) {
-                $query->andWhere([UserProfile::tableName() . '.privacy' => 1]);
+                $query->andWhere([UserProfile::tableName().'.privacy' => 1]);
             }
 
             // clone the query withou the filter for type o cron
@@ -258,8 +261,8 @@ class NotifierController extends Controller
             // query for network notificatiomn
             if (!empty($schedule)) {
                 $queryConfCommunity
-                    ->orderBy([UserProfile::tableName() . '.user_id' => SORT_ASC . ', notificationconf_network.*'])
-                    ->select(UserProfile::tableName() . '.*')
+                    ->orderBy([UserProfile::tableName().'.user_id' => SORT_ASC.', notificationconf_network.*'])
+                    ->select(UserProfile::tableName().'.*')
                     ->innerJoin('notificationconf_network', 'notificationconf_network.user_id = user_profile.user_id')
                     ->andWhere(['IS NOT', 'record_id', null])
                     ->andWhere(['IS NOT', 'models_classname_id', null])
@@ -270,7 +273,7 @@ class NotifierController extends Controller
 
             $result = $query->all();
         } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $result;
@@ -305,18 +308,18 @@ class NotifierController extends Controller
 
         if (\Yii::$app->getModule('community')) {
             foreach ($comminities as $comminity_id) {
-                Console::stdout('Start scope-mail-channel for community:' . $comminity_id . PHP_EOL);
+                Console::stdout('Start scope-mail-channel for community:'.$comminity_id.PHP_EOL);
                 $community = \open20\amos\community\models\Community::findOne(['id' => $comminity_id]);
                 if (!is_null($community)) {
-                    $users = $community->getCommunityUserMms()->select('user_profile.user_id, user_profile.created_at')->all();
+                    $users            = $community->getCommunityUserMms()->select('user_profile.user_id, user_profile.created_at')->all();
                     /** @var AmosCwh $cwhModule */
-                    $cwhModule = Yii::$app->getModule('cwh');
+                    $cwhModule        = Yii::$app->getModule('cwh');
                     $cwhModule->scope = ['community' => $comminity_id];
-                    $factory = new BuilderFactory();
-                    $builder = $factory->create(BuilderFactory::CONTENT_MAIL_BUILDER);
+                    $factory          = new BuilderFactory();
+                    $builder          = $factory->create(BuilderFactory::CONTENT_MAIL_BUILDER);
                     $this->notifyUserArray($cwhModule, $users, $builder);
                 }
-                Console::stdout('End scope-mail-channel for community:' . $comminity_id . PHP_EOL);
+                Console::stdout('End scope-mail-channel for community:'.$comminity_id.PHP_EOL);
             }
 
             $cwhModule->scope = null;
@@ -391,6 +394,7 @@ class NotifierController extends Controller
                                 foreach ($notificationNetworkConfDontNotify as $networkConf) {
                                     $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
                                 }
+                                $networkConfArray = $this->setOtherExclusions($networkConfArray, $uid);
                                 if (!empty($networkConfArray)) {
                                     foreach ($networkConfArray as $classname_id => $record_id) {
 
@@ -535,6 +539,32 @@ class NotifierController extends Controller
                 throw $e;
             }
         }
+    }
+
+    protected function setOtherExclusions($networkConfArray, $user_id)
+    {
+        try{
+        $moduleCommunity = \Yii::$app->getModule('community');
+        if (!empty($moduleCommunity)) {
+            $classnameId = \open20\amos\core\models\ModelsClassname::find()->andWhere(['classname' => 'open20\\amos\\community\\models\\Community'])->one();
+            if (!empty($classnameId)) {
+                $class  = 'open20\amos\community\models\CommunityUserMm';
+                $search = $class::find()->andWhere(['user_id' => $user_id])->andWhere(['or',
+                        ['status' => 'GUEST'],
+                        ['role' => 'GUEST']
+                    ])->select('community_id')
+                    ->all();
+                if (!empty($search)) {
+                    foreach ($search as $community) {
+                        $networkConfArray[$classnameId->id] = $community->id;
+                    }
+                }
+            }
+        }
+        } catch (Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+        }
+        return $networkConfArray;
     }
 
     /**
@@ -844,13 +874,14 @@ class NotifierController extends Controller
 
     private function getOrderModelsToNotify()
     {
+        $module       = \Yii::$app->getModule('notify');
         $orderByField = '';
         if ($this->notifyModule && !empty($this->notifyModule->orderEmailSummary)) {
             $escapedClassnames = [];
             foreach ($this->notifyModule->orderEmailSummary as $classname) {
                 $escapedClassnames [] = addslashes($classname);
             }
-            $orderByField = ("'" . implode("','", array_reverse($escapedClassnames)) . "'");
+            $orderByField = ("'".implode("','", array_reverse($escapedClassnames))."'");
         }
         return $orderByField;
     }
@@ -865,7 +896,8 @@ class NotifierController extends Controller
     {
         $modelsclassname = ModelsClassname::find()->andWhere(['classname' => $classname])->one();
         if ($modelsclassname) {
-            $queryModel->leftJoin('notification_content_language', 'notification_content_language.record_id = ' . $classname::tableName() . '.id')
+            $queryModel->leftJoin('notification_content_language',
+                    'notification_content_language.record_id = '.$classname::tableName().'.id')
                 ->andWhere(['models_classname_id' => $modelsclassname->id])
                 ->andWhere(['language' => $language]);
         }

@@ -147,7 +147,7 @@ class CustomMailBuilder extends AMailBuilder
                 $view = $controller->renderPartial($this->getTemplate(), $this->getParams());
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         $ris = $this->renderView(get_class($model), "full_mail", ArrayHelper::merge($this->getParams(),[

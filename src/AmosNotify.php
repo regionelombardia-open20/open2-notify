@@ -69,6 +69,13 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
+    /**
+     *  disable notification for default behavior.
+     *  enable notification only with post parameter: saveNotificationSendEmail = 1
+     */
+    public $disableDefaultBehaviorClasses = [
+    ];
+
     public $orderEmailSummary = [
         'open20\amos\events\models\Event',
         'open20\amos\news\models\News',
@@ -241,7 +248,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $repository->notificationOff($uid, $class_name, $externalquery, $channel);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -257,7 +264,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $repository->notificationOn($uid, $class_name, $externalquery, $channel);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
 
@@ -274,7 +281,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $result = $repository->countNotRead($uid, $class_name, $externalquery);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $result;
@@ -292,7 +299,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $result = $repository->modelIsRead($model, $uid);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $result;
@@ -312,7 +319,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $notificationChannel = AmosNotify::instance()->createModel('NotificationChannels');
             $retval = $notificationChannel->manageNewChannelNotifications($modelClassName, $channel, $type);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $retval;
@@ -331,7 +338,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $ok = $repository->favouriteOn($uid, $class_name, $contentId);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $ok;
@@ -350,7 +357,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $ok = $repository->favouriteOff($uid, $class_name, $contentId);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $ok;
@@ -368,7 +375,25 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
             $repository = new NotifierRepository();
             $result = $repository->isFavorite($model, $uid);
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $class_name
+     * @param int|null $uid
+     * @return bool
+     */
+    public function getAllFavourites($class_name, $uid)
+    {
+        $result = false;
+        try {
+            $repository = new NotifierRepository();
+            $result = $repository->getAllFavourites($class_name, $uid);
+        } catch (\Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
         return $result;

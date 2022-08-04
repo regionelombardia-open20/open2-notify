@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -42,15 +41,14 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
      * @var string $destinatari_notifiche Destinatari notifiche
      */
     public $destinatari_notifiche;
-
     public $modelClassName;
     public $modelFormName;
-
 
     /**
      * @var Container $container - used in search for notification process
      */
     private $container;
+
     /**
      * @var bool $isSearch - if it is content model search class
      */
@@ -58,16 +56,16 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
 
     public function __construct(array $config = [])
     {
-        if($this->isSearch){
-            $this->container = new Container();
-            $this->container->set('notify',Yii::$app->getModule('notify'));
-            $reflectionClass = new \ReflectionClass($this->className());
+        if ($this->isSearch) {
+            $this->container      = new Container();
+            $this->container->set('notify', Yii::$app->getModule('notify'));
+            $reflectionClass      = new \ReflectionClass($this->className());
             $this->modelClassName = $reflectionClass->getParentClass()->name;
-            $parent = $reflectionClass->getParentClass()->newInstance();
-            $this->modelFormName = $parent->formName();
-        }else{
+            $parent               = $reflectionClass->getParentClass()->newInstance();
+            $this->modelFormName  = $parent->formName();
+        } else {
             $this->modelClassName = $this->className();
-            $this->modelFormName = $this->formName();
+            $this->modelFormName  = $this->formName();
         }
         parent::__construct($config);
     }
@@ -78,7 +76,7 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
     public function rules()
     {
         return ArrayHelper::merge(parent::rules(), [
-            [['destinatari_notifiche'], 'safe']
+                [['destinatari_notifiche'], 'safe']
         ]);
     }
 
@@ -87,11 +85,12 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
      */
     public function isNews()
     {
-        $bool = false;
+        $bool   = false;
         $module = \Yii::$app->getModule('notify');
-        if ($module) {
+        if ($module && !\Yii::$app->user->isGuest) {
             $profile = \Yii::$app->getUser()->getIdentity()->getProfile();
-            if ($this->__get(self::$isNewsFiledName) > $profile->ultimo_logout && !$module->modelIsRead($this, \Yii::$app->getUser()->id)) {
+            if ($this->__get(self::$isNewsFiledName) > $profile->ultimo_logout && !$module->modelIsRead($this,
+                    \Yii::$app->getUser()->id)) {
                 $bool = true;
             }
         }
@@ -103,22 +102,35 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
      */
     public function createOrderClause()
     {
-        return [
-            'attributes' => [
-                $this->orderAttribute,
-                'isNew' => [
-                    'asc' => new Expression($this->tableName() . "." . self::$isNewsFiledName . " > '" . \Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout . "'"),
-                    'desc' => new Expression($this->tableName() . "." . self::$isNewsFiledName . " > '" . \Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout . "' DESC"),
-                    'default' => SORT_DESC,
+        if (\Yii::$app->user->isGuest) {
+            return [
+                'attributes' => [
+                    $this->orderAttribute,
+                    'id'
                 ],
-                'id'
-            ],
-            'defaultOrder' => [
-                'isNew' => SORT_DESC,
-                $this->orderAttribute => (int)$this->orderType,
-                'id' => SORT_DESC
-            ]
-        ];
+                'defaultOrder' => [
+                    $this->orderAttribute => (int) $this->orderType,
+                    'id' => SORT_DESC
+                ]
+            ];
+        } else {
+            return [
+                'attributes' => [
+                    $this->orderAttribute,
+                    'isNew' => [
+                        'asc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".\Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout."'"),
+                        'desc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".\Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout."' DESC"),
+                        'default' => SORT_DESC,
+                    ],
+                    'id'
+                ],
+                'defaultOrder' => [
+                    'isNew' => SORT_DESC,
+                    $this->orderAttribute => (int) $this->orderType,
+                    'id' => SORT_DESC
+                ]
+            ];
+        }
     }
 
     /**
@@ -132,7 +144,7 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
                 $user_id = $this->created_by;
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
         return $user_id;
     }
@@ -158,7 +170,7 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
      */
     public function setNotifier(NotifyWidget $notifier)
     {
-        $this->container->set('notify',$notifier);
+        $this->container->set('notify', $notifier);
     }
 
     /**
@@ -167,13 +179,12 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
     public function getNotifier()
     {
         try {
-            return  $this->container->get('notify');
+            return $this->container->get('notify');
         } catch (\Exception $e) {
             return null;
         } catch (\Error $e) {
             return null;
         }
- 
     }
 
     /**
@@ -185,13 +196,9 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
     {
         /** @var  $notify AmosNotify */
         $notify = $this->getNotifier();
-        if($notify)
-        {
+        if ($notify) {
             $notify->notificationOff(
-                Yii::$app->getUser()->id, 
-                $this->modelClassName , 
-                $query, 
-                NotificationChannels::CHANNEL_READ
+                Yii::$app->getUser()->id, $this->modelClassName, $query, NotificationChannels::CHANNEL_READ
             );
         }
     }

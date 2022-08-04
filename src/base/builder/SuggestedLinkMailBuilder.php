@@ -66,7 +66,7 @@ class SuggestedLinkMailBuilder extends ContentMailBuilder
             
 
 //        } catch (\Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
 
         return $mail;

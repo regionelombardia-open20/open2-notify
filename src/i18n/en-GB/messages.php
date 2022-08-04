@@ -125,4 +125,5 @@ return [
     '#WidgetIconNewsletterDashboard_description' => 'Newsletter',
     '#WidgetIconNewsletterDashboard_label' => 'Newsletter',
     '#with_comment' => 'Comment:',
+    'collegati' => 'connect',
 ];

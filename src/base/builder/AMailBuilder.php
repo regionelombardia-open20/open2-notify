@@ -97,7 +97,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
                 }
             }
         } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
             $allOk = false;
         }
         return $allOk;
@@ -159,13 +159,12 @@ abstract class AMailBuilder extends BaseObject implements Builder
     {
         $allOk = true;
 
-//        try {
+        try {
             foreach ($userIds as $id) {
                 $user = User::findOne($id);
                 if (!is_null($user)) {
                     $this->setUserLanguage($id);
                     $subject = $this->getSubject($resultset);
-
                     $message = $this->renderEmailMultipleSections($resultset, $resultsetNetwork, $resultsetComments, $user);
 
                     $mailModule = Yii::$app->getModule("email");
@@ -185,10 +184,10 @@ abstract class AMailBuilder extends BaseObject implements Builder
                     }
                 }
             }
-//        } catch (\Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
-//            $allOk = false;
-//        }
+        } catch (\Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+            $allOk = false;
+        }
         return $allOk;
     }
 
@@ -232,7 +231,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
                 }
             }
 //        } catch (\Exception $ex) {
-//            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //            $allOk = false;
 //        }
         return $allOk;
