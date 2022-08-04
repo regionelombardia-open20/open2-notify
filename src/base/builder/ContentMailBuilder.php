@@ -252,7 +252,6 @@ class ContentMailBuilder extends AMailBuilder
     protected function renderEmailMultipleSections($resultSetNormal, $resultSetNetwork, $resultSetComments, $user)
     {
         $mail = '';
-        $class_content = '';
         
         try {
             

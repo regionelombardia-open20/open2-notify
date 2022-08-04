@@ -5,11 +5,10 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\core\forms\views\widgets
+ * @package    open20\amos\notificationmanager\widgets\views\widgets
  * @category   CategoryName
  */
 
-//use open20\amos\core\forms\InteractionMenuWidget;
 use open20\amos\admin\models\UserProfile;
 use open20\amos\core\module\BaseAmosModule;
 
@@ -33,13 +32,13 @@ if (isset(\Yii::$app->params['customContentCreatorAvatarUrl']) && \Yii::$app->pa
 
 ?>
 
-<td width="25" border="0" align="top" style="padding-right:5px;">
-    <img src="<?= $avatarUrl; ?>" width="25" height="25" border="0" align="center" style="border-radius:50%;">
-</td>
+<?php if (!isset(\Yii::$app->params['hideEmailContentCreatorAvatar']) || (isset(\Yii::$app->params['hideEmailContentCreatorAvatar']) && (\Yii::$app->params['hideEmailContentCreatorAvatar'] === false))): ?>
+    <td width="25" border="0" align="top" style="padding-right:5px;">
+        <img src="<?= $avatarUrl; ?>" width="25" height="25" border="0" align="center" style="border-radius:50%;" alt="<?= $contentCreatorNameSurname; ?>">
+    </td>
+<?php endif; ?>
 <td style="font-size:11px; font-family: sans-serif; color:#000;">
-
     <p style="margin:0px;"><strong><?= $widget->getCreator($contentCreatorNameSurname) ?></strong></p>
-    
     <?php if (isset($contentPrevalentPartnership) && $contentPrevalentPartnership) : ?>
         <p style="margin:0px;">(<?= $contentPrevalentPartnership ?>)</p>
     <?php endif; ?>

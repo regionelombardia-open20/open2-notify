@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\notify\models
+ * @package    open20\amos\notificationmanager\models
  * @category   CategoryName
  */
 
@@ -30,6 +30,8 @@ class NotificationsConfOpt extends BaseObject
     const SMS_DAY = NotificationsConfOpt::EMAIL_DAY;
     const SMS_WEEK = NotificationsConfOpt::EMAIL_WEEK;
     const SMS_MONTH = NotificationsConfOpt::EMAIL_MONTH;
+    
+    const NEWSLETTER = 0x0010;
     
     /**
      * This method return the email frequencies.

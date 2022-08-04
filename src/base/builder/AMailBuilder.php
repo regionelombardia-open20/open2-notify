@@ -147,13 +147,15 @@ abstract class AMailBuilder extends BaseObject implements Builder
         }
         return $allOk;
     }
-
+    
     /**
      * @param array $userIds
      * @param array $resultset
+     * @param array $resultsetNetwork
+     * @param array $resultsetComments
      * @return bool
      */
-    public function sendEmailMultipleSections( $userIds,  $resultset, $resultsetNetwork, $resultsetComments)
+    public function sendEmailMultipleSections($userIds, $resultset, $resultsetNetwork, $resultsetComments)
     {
         $allOk = true;
 
@@ -190,14 +192,12 @@ abstract class AMailBuilder extends BaseObject implements Builder
         return $allOk;
     }
 
-
-
     /**
      * @param array $userIds
      * @param array $resultset
      * @return bool
      */
-    public function sendEmailUserNotify( $userIds, $resultset)
+    public function sendEmailUserNotify($userIds, $resultset)
     {
         $allOk = true;
         $this->logOn('AMailBuilder - inizio ');
@@ -238,10 +238,6 @@ abstract class AMailBuilder extends BaseObject implements Builder
         return $allOk;
     }
 
-
-
-
-
     /**
      * @param int $userId
      */
@@ -254,7 +250,13 @@ abstract class AMailBuilder extends BaseObject implements Builder
             $module->setAppLanguage($lang);
         }
     }
-
+    
+    /**
+     * @param bool $module
+     * @param bool $view
+     * @param bool $params
+     * @return string
+     */
     public function renderView($module = false, $view = false, $params = false) {
         $mailManager = AmosEmail::getInstance() ?: new AmosEmail('email', Yii::$app);
 

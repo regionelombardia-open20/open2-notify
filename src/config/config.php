@@ -10,5 +10,12 @@
  */
 
 return [
-
+    'params' => [
+        //active the search
+        'searchParams' => [
+            'newsletter' => [
+                'enable' => true
+            ]
+        ]
+    ]
 ];

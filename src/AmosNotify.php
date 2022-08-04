@@ -112,6 +112,11 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     private static $registerEvent        = false;
 
     /**
+     * @var array $customIconPlugins
+     */
+    public $customIconPlugins = [];
+
+    /**
      * @inheritdoc
      */
     public $controllerNamespace = 'open20\amos\notificationmanager\controllers';
@@ -142,6 +147,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
         \Yii::setAlias('@open20/amos/notificationmanager/commands', __DIR__ . '/commands/');
         // initialize the module with the configuration loaded from config.php
         \Yii::configure($this, require(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'));
+        $this->orderEmailSummary = array_unique($this->orderEmailSummary);
     }
 
     /**
@@ -200,6 +206,24 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public function getWidgetIcons()
     {
         return [];
+    }
+
+    /**
+     * Same as calling AmosNotify::t('amosnotify', ...$args)
+     * @return string
+     */
+    public static function txt($txt, ...$args)
+    {
+        return static::t('amosnotify', $txt, ...$args);
+    }
+
+    /**
+     * Same as calling AmosNotify::tHtml('amosnotify', ...$args)
+     * @return string
+     */
+    public static function txtHtml($txt, ...$args)
+    {
+        return static::tHtml('amosnotify', $txt, ...$args);
     }
 
     /**

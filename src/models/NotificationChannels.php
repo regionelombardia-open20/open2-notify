@@ -27,8 +27,9 @@ class NotificationChannels extends BaseObject
     
     //const
     const CHANNEL_MAIL = 0x0001;            // dec. 1
-    const CHANNEL_IMMEDIATE_MAIL = 0x0002; // NOT USED
+    const CHANNEL_IMMEDIATE_MAIL = 0x0002;  // NOT USED
     const CHANNEL_UI = 0x0004;              // dec. 4
+    const CHANNEL_NEWSLETTER = 0x0010;      // dec. 16
     const CHANNEL_SMS = 0x00F0;             // dec. 240
     const CHANNEL_READ = 0x0F00;            // dec. 3840
     const CHANNEL_READ_DETAIL = 0x0F01;     // dec. 3841

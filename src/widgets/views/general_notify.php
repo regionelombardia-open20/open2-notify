@@ -10,12 +10,20 @@
  */
 
 use open20\amos\admin\models\UserProfile;
-use yii\helpers\Html;
+use open20\amos\core\helpers\Html;
 use open20\amos\notificationmanager\AmosNotify;
 
 /**
  * @var \open20\amos\notificationmanager\widgets\NotifyFrequencyAdvancedWidget $widget
+ * @var string $htmlFrequencySelector
+ * @var string $htmlContattiSuggeritiEmailFrequencySelector
+ * @var string $htmlContenutiSuccessoEmailFrequencySelector
+ * @var string $htmlProfiloSuccessoEmailFrequencySelector
  * @var \open20\amos\notificationmanager\models\NotificationConf $notificationConf
+ * @var array $notificationNetworkValues
+ * @var \yii\data\ActiveDataProvider $dataProviderNetwork
+ * @var array $widgetConfData
+ * @var array $notificationLanguagePreferences
  * @var \open20\amos\notificationmanager\AmosNotify $module
  */
 
@@ -96,6 +104,13 @@ $this->registerJs($js);
         </div>
     <?php endif; ?>
     <div class="form-group col-xs-12">
+        <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere le newsletter?') ?></label>
+        <?= Html::radioList('notify_newsletter', $notificationConf->notify_newsletter, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
+                'id' => 'notify-newsletter',
+            ]
+        ) ?>
+    </div>
+    <div class="form-group col-xs-12">
         <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere aggiornamenti di avvenuta pubblicazione contenuto?') ?></label>
         <?= Html::radioList('notify_content_pubblication', $notificationConf->notify_content_pubblication, [1 => AmosNotify::t('amosnotify', 'Si'), 0 => AmosNotify::t('amosnotify', 'No')], [
                 'id' => 'notify-content-pubblication',
@@ -170,7 +185,6 @@ $this->registerJs($js);
         <label class="control-label"><?= AmosNotify::t('amosnotify', 'Con quale frequenza desideri ricevere aggiornamenti relativi alle visualizzazioni del tuo profilo?') ?></label>
         <?= $htmlProfiloSuccessoEmailFrequencySelector ?>
     </div>
-
     <?php
     if (!empty($dataProviderNetwork)) {
         echo "<p>" . AmosNotify::t('amosnotify',

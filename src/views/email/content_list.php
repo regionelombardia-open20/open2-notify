@@ -13,8 +13,6 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\ContentModelInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\record\Record;
-use open20\amos\cwh\base\ModelContentInterface;
-use open20\amos\core\forms\ItemAndCardHeaderWidget;
 
 /**
  * @var Record|ContentModelInterface|ViewModelInterface $model
@@ -27,18 +25,24 @@ if (!empty($profile)) {
 
 ?>
 
-
 <tr>
     <td colspan="2" style="padding-bottom:10px;">
         <table cellspacing="0" cellpadding="0" border="0" align="center"   class="email-container" width="100%">
 
 <?php foreach ($arrayModels as $model){ ?>
+    <?php
+    $modelTitle = $model->getTitle();
+    $modelAbsoluteFullViewUrl = Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl());
+    ?>
     <tr>
         <td bgcolor="#FFFFFF" style="padding:10px 15px 10px 15px;">
             <table width="100%">
                 <tr>
                     <td colspan="2" style="font-size:18px; font-weight:bold; padding: 5px 0 ; font-family: sans-serif;">
-                        <?= Html::a($model->getTitle(), Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()), ['style' => 'color: #000; text-decoration:none;']) ?>
+                        <?= Html::a($modelTitle, $modelAbsoluteFullViewUrl, [
+                            'style' => 'color: #000; text-decoration:none;',
+                            'title' => $modelTitle
+                        ]) ?>
                     </td>
                 </tr>
                 <tr>
@@ -57,11 +61,11 @@ if (!empty($profile)) {
                                         </tr>
                                     </table>
                                 </td>
-                                <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?=Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>" style="background: #297A38; border:3px solid #297A38; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
+                                <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?= $modelAbsoluteFullViewUrl ?>" style="background: #297A38; border:3px solid #297A38; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
                                         <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
-                                    </a></td>
+                                    </a>
+                                </td>
                             </tr>
-
                         </table>
                     </td>
                 </tr>

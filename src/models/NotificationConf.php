@@ -26,6 +26,7 @@ use yii\db\ActiveRecord;
  * @property integer $notifications_enabled
  * @property integer $notify_content_pubblication
  * @property integer $notify_comments
+ * @property integer $notify_newsletter
  * @property integer $notify_ticket_faq_referee
  * @property integer $email
  * @property integer $sms
@@ -84,6 +85,7 @@ class NotificationConf extends ActiveRecord
                 'notifications_enabled',
                 'notify_content_pubblication',
                 'notify_comments',
+                'notify_newsletter',
                 'notify_ticket_faq_referee',
                 'contatto_accettato_flag',
                 'contatti_suggeriti_email',

@@ -5,18 +5,19 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\notify
+ * @package    open20\amos\notificationmanager\models
  * @category   CategoryName
  */
-
 
 namespace open20\amos\notificationmanager\models;
 
 use open20\amos\notificationmanager\AmosNotify;
-use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
 /**
+ * Class Notification
+ *
  * This is the model class for table "notification".
  *
  * @property integer $id
@@ -24,14 +25,16 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $channels
  * @property integer $content_id
  * @property string $class_name
- * @property integer $models_content_id
+ * @property integer $processed
+ * @property integer $models_classname_id
  * @property integer $record_id
  * @property integer $created_at
  * @property integer $updated_at
+ *
+ * @package open20\amos\notificationmanager\models
  */
 class Notification extends ActiveRecord
 {
-
     /**
      * @inheritdoc
      */
@@ -39,18 +42,18 @@ class Notification extends ActiveRecord
     {
         return 'notification';
     }
-
+    
     /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['user_id', 'channels', 'content_id', 'created_at', 'updated_at', 'models_content_id',  'record_id'], 'integer'],
+            [['user_id', 'channels', 'content_id', 'processed', 'created_at', 'updated_at', 'models_content_id', 'record_id'], 'integer'],
             [['class_name'], 'string'],
         ];
     }
-
+    
     /**
      * @inheritdoc
      */
@@ -62,11 +65,13 @@ class Notification extends ActiveRecord
             'channels' => 'Channels',
             'content_id' => 'Content ID',
             'class_name' => 'Class Name',
+            'processed' => 'Processed',
+            'record_id' => 'Record Id',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
     }
-
+    
     /**
      * @inheritdoc
      */
@@ -76,7 +81,7 @@ class Notification extends ActiveRecord
             'class' => TimestampBehavior::className(),
         ]);
     }
-
+    
     /**
      * @return \yii\db\ActiveQuery
      */
