@@ -81,6 +81,7 @@ foreach ($arrayModels as $model) {
                 <tr>
                     <td width="400">
                         <table width="100%">
+                            prova 3
                             <tr>
                                 <?=
                                 \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
@@ -108,15 +109,17 @@ foreach ($arrayModels as $model) {
                 </tr>
             </table>
         </td>
-        <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
-            <a href="<?= Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()) ?>"
-            
-            style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
-                <?php  if($commentsCount == false){  ?>
-                <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= $textButton ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
-                <?php  }  ?>
-            </a>
-        </td>
+        <?php  if($commentsCount === false){  ?>
+            <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
+                <a href="<?= Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl()) ?>"
+                
+                style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 24px;" class="button-a">
+                    
+                    <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]--><?= $textButton ?><!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+                    
+                </a>
+            </td>
+        <?php  }  ?>
     </tr>
 
     </table>

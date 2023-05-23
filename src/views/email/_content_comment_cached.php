@@ -10,7 +10,7 @@ $contextClassname = $comment->context;
 $modelContext = $contextClassname::findOne($comment->context_id);
 $viewUrl = '';
 if($modelContext) {
-   $viewUrl =  Yii::$app->urlManager->createAbsoluteUrl($modelContext->getFullViewUrl());
+    $viewUrl =  Yii::$app->urlManager->createAbsoluteUrl($modelContext->getFullViewUrl());
 }
 ?>
 
@@ -34,8 +34,8 @@ if($modelContext) {
                     </table>
                 </td>
                 <td align="right" width="85" height="20" valign="bottom" style="text-align:center;padding-left:10px">
-                    <a style="background: <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; border:3px solid <?= $notifyModule->mailThemeColor['bgPrimary'] ?>; color: <?= $notifyModule->mailThemeColor['textContrastBgPrimary'] ?>; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;"
-                            class="button-a" href="<?= $viewUrl ?>">
+                    <a style="background: ___network_color1___; border:3px solid ___network_color1___; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;"
+                       class="button-a" href="<?= $viewUrl ?>">
                         <?= AmosNotify::t('amosnotify', "Rispondi")?>
                     </a>
                 </td>

@@ -58,7 +58,10 @@ class ValidatedMailBuilder extends AMailBuilder
             $userid = \Yii::$app->user->id; //$model->getStatusLastUpdateUser($model->getValidatedStatus());
             if (!is_null($userid)) {
                 $loggedUser = User::findOne($userid);
-                $comment = $model->getStatusLastUpdateComment($model->getValidatedStatus());
+                $comment = null;
+                if (method_exists($model, 'getStatusLastUpdateComment')) {
+                    $comment = $model->getStatusLastUpdateComment($model->getValidatedStatus());
+                }
                 /**
                  *
                  */

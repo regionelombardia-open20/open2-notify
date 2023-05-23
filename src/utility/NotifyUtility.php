@@ -106,8 +106,8 @@ class NotifyUtility extends BaseObject
                 $notificationConf->{$fieldName} = $params[$fieldName];
             }
         }
-        if($notificationConf->last_update_frequency == null){
-            $notificationConf->last_update_frequency =  date('Y-m-d H:i:s',strtotime("-3 Months"));
+        if ($notificationConf->last_update_frequency == null) {
+            $notificationConf->last_update_frequency = date('Y-m-d H:i:s', strtotime("-3 Months"));
         }
         if (isset($params['contatti_suggeriti_email_selector_name'])) {
             // Check the params correct value for contatti_suggeriti_email_selector_name
@@ -115,18 +115,18 @@ class NotifyUtility extends BaseObject
                 return false;
             }
 
-            if($notificationConf->contatti_suggeriti_email == 0 && $params['contatti_suggeriti_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
-                $notificationConf->last_update_frequency =  date('Y-m-d H:i:s');
+            if ($notificationConf->contatti_suggeriti_email == 0 && $params['contatti_suggeriti_email_selector_name'] != NotificationsConfOpt::EMAIL_OFF) {
+                $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
             }
 
             $notificationConf->contatti_suggeriti_email = $params['contatti_suggeriti_email_selector_name'];
         }
 
-        if($emfreq_back == NotificationsConfOpt::EMAIL_OFF  && !empty($params['email_frequency_selector_name']) && $params['email_frequency_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+        if ($emfreq_back == NotificationsConfOpt::EMAIL_OFF && !empty($params['email_frequency_selector_name']) && $params['email_frequency_selector_name'] != NotificationsConfOpt::EMAIL_OFF) {
             $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
         }
         if (isset($params['contenuti_successo_email_selector_name'])) {
-            if($notificationConf->contenuti_successo_email == 0 && $params['contenuti_successo_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+            if ($notificationConf->contenuti_successo_email == 0 && $params['contenuti_successo_email_selector_name'] != NotificationsConfOpt::EMAIL_OFF) {
                 $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
             }
             // Check the params correct value for contenuti_successo_email_selector_name
@@ -138,7 +138,7 @@ class NotifyUtility extends BaseObject
 
         if (isset($params['profilo_successo_email_selector_name'])) {
 
-            if($notificationConf->profilo_successo_email == 0 && $params['profilo_successo_email_selector_name'] !=NotificationsConfOpt::EMAIL_OFF){
+            if ($notificationConf->profilo_successo_email == 0 && $params['profilo_successo_email_selector_name'] != NotificationsConfOpt::EMAIL_OFF) {
                 $notificationConf->last_update_frequency = date('Y-m-d H:i:s');
             }
             // Check the params correct value for profilo_successo_email_selector_name
@@ -176,7 +176,7 @@ class NotifyUtility extends BaseObject
 
         $ok = $notificationConf->save();
 
-        if(isset($params['notify_contents'])){
+        if (isset($params['notify_contents'])) {
             $this->saveNotificationConfContent($notificationConf, $params['notify_contents']);
         }
         $this->saveNetworkNotification($userId, $params);
@@ -187,10 +187,11 @@ class NotifyUtility extends BaseObject
      * @param $notificationConf
      * @param $params
      */
-    public function saveNotificationConfContent($notificationConf, $params){
+    public function saveNotificationConfContent($notificationConf, $params)
+    {
         NotificationConfContent::deleteAll(['notification_conf_id' => $notificationConf->id]);
 
-        foreach ($params as $contentClassId => $configs){
+        foreach ($params as $contentClassId => $configs) {
             $conf = new NotificationConfContent();
             $conf->notification_conf_id = $notificationConf->id;
             $conf->models_classname_id = $contentClassId;
@@ -257,7 +258,7 @@ class NotifyUtility extends BaseObject
      */
     public function setDefaultNotificationsConfs($userId)
     {
-        $emailFrequency = $this->notifyModule->defaultSchedule;
+        $emailFrequency = NotificationsConfOpt::EMAIL_DAY;
         $smsFrequency = 0;
         $params = [
             'notifications_enabled' => 1,
@@ -386,7 +387,7 @@ class NotifyUtility extends BaseObject
             $iconName .= 'discussioni';
         } else if ($classname == 'open20\amos\sondaggi\models\Sondaggi') {
             $iconName .= 'sondaggi';
-        } else if ($classname == 'open20\amos\partnershipprofiles\models\PartnershipProfiles') {
+        } else if ($classname == 'open20\amos\partnershipprofiles\models\PartnershipProfiles' || 'open20\amos\collaborations\models\CollaborationProposals') {
             $iconName .= 'collaborazione';
         } else if ($classname == 'open20\amos\events\models\Event') {
             $iconName .= 'eventi';
@@ -555,7 +556,7 @@ class NotifyUtility extends BaseObject
             $uids = [];
             foreach ($res as $r) {
                 // Removing $toUser from list
-                if($r->id != $toUserId) {
+                if ($r->id != $toUserId) {
                     $uids[] = $r->id;
                 }
             }
@@ -594,5 +595,33 @@ class NotifyUtility extends BaseObject
             print 'findUserContentData - fine <br />' . "\n";//exit;
         } // $debugMe
         return $results;
+    }
+
+    /**
+     * @param $filename
+     * @param $message
+     * @param string $startOrEnd
+     * @param null $previousMicrotime
+     * @return string
+     */
+    public static function debugDurationMicrotime($filename, $message, string $startOrEnd = 'start', $previousMicrotime = null)
+    {
+        $enableDebug = false;
+
+        $currentMicrotime = microtime(true);
+        if ($enableDebug) {
+            $myfile = fopen($filename, "a+") or die("Unable to open file!");
+            if ($startOrEnd == 'start') {
+                $txt = "START " . $message . ' ' . date("H:i:s") . "\n";
+            } else {
+                $txt = "END " . $message . ' ' . date("H:i:s") . "\n";
+                $duration = $currentMicrotime - $previousMicrotime;
+                $txt .= "DURATION " . $duration . date("H:i:s") . "\n";
+                $txt .= "-------------" . "\n";
+            }
+            fwrite($myfile, $txt);
+            fclose($myfile);
+        }
+        return $currentMicrotime;
     }
 }

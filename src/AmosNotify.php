@@ -80,10 +80,14 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $orderEmailSummary = [
         'open20\amos\events\models\Event',
         'open20\amos\news\models\News',
+        'open20\amos\collaborations\models\CollaborationProposals',
         'open20\amos\partnershipprofiles\models\PartnershipProfile',
         'open20\amos\discussioni\models\DiscussioniTopic',
         'open20\amos\sondaggi\models\Sondaggi',
     ];
+
+    // Models enabled in notification_conf_content table
+    public $notificationConfContentEnabled = [];
 
     /** @var bool */
     public $enableNotificationContentLanguage = false;
@@ -182,6 +186,20 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @var int $baseOffset
      */
     public $segmentationOffset = 3000;
+
+    /**
+     * Add notification models without CWH
+     * [classname => methodReturnActiveQuery]
+     * e.g.: ['namespace\models\Basename' => 'getMethodPublishedContent']
+     * @var array
+     */
+    public $addNotificationWithoutCwh = [];
+
+    /**
+     * @var bool
+     */
+    public $enableCachedNotificationContents = false;
+
     /**
      * @inheritdoc
      */

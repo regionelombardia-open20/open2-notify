@@ -36,7 +36,7 @@ class ContentMailBuilder extends AMailBuilder
     {
         return Yii::t('amosnotify', "#Content_Change_Subject_Notify");
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -64,10 +64,10 @@ class ContentMailBuilder extends AMailBuilder
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
-        
+
         return $mail;
     }
-    
+
     public function renderEmailLegacy(array $resultset, User $user)
     {
         $mail = '';
@@ -82,7 +82,7 @@ class ContentMailBuilder extends AMailBuilder
                 /** @var Notification $notify */
                 $cls_name = $notify->class_name;
                 $modelClassname = ModelsClassname::find()->andWhere(['classname' => $cls_name])->one();
-                
+
                 /** @var NotifyRecord|ModelLabelsInterface $model */
                 $model = $cls_name::find()->andWhere(['id' => $notify->content_id])->one();
                 if (!in_array($notify->class_name . '-' . $notify->content_id, $alreadyAdded) && !is_null($model) && $model->sendCommunication()) {
@@ -91,7 +91,7 @@ class ContentMailBuilder extends AMailBuilder
                         $mail .= $this->renderContentTitleLegacy($model);
                         $class_content = $notify->class_name;
 
-                        if($modelClassname) {
+                        if ($modelClassname) {
                             $module = \Yii::$app->getModule($modelClassname->module);
                             if (!empty($module->viewPathEmailContentSubtitle[$cls_name])) {
                                 $mail .= $this->renderPersonalizedContentSubtitleLegacy($model, $user, $module->viewPathEmailContentSubtitle[$cls_name]);
@@ -107,10 +107,10 @@ class ContentMailBuilder extends AMailBuilder
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
-        
+
         return $mail;
     }
-    
+
     /**
      * @param Record $model
      * @param User $user
@@ -123,16 +123,16 @@ class ContentMailBuilder extends AMailBuilder
             'model' => $model,
             'profile' => $user->userProfile
         ]);
-        
+
         $ris = $this->renderView(get_class($model), "content_body", [
             'model' => $model,
             'profile' => $user->userProfile,
             'original' => $view
         ]);
-        
+
         return $ris;
     }
-    
+
     /**
      * @param Record $model
      * @param User $user
@@ -147,8 +147,8 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
-    
+
+
     /**
      * @param ModelLabelsInterface $model
      * @return string
@@ -156,22 +156,23 @@ class ContentMailBuilder extends AMailBuilder
     protected function renderContentTitle(ModelLabelsInterface $model)
     {
         $icon = NotifyUtility::getIconPlugins(get_class($model), 'white');
-        
+
         $controller = \Yii::$app->controller;
-      
+
         $view = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_title", [
             'title' => $model->getGrammar()->getModelLabel(),
             'icon' => $icon
         ]);
-        
+
         $ris = $this->renderView(get_class($model), "content_title", [
             'title' => $model->getGrammar()->getModelLabel(),
             'icon' => $icon,
             'original' => $view
         ]);
+
         return $ris;
     }
-    
+
     /**
      * @param ModelLabelsInterface $model
      * @return string
@@ -184,7 +185,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param array $resultset
      * @return string
@@ -196,15 +197,15 @@ class ContentMailBuilder extends AMailBuilder
         $view = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_header", [
             'contents_number' => $contents_number
         ]);
-        
+
         $ris = $this->renderView(AmosNotify::getModuleName(), "content_header", [
             'contents_number' => $contents_number,
             'original' => $view
         ]);
-        
+
         return $ris;
     }
-    
+
     /**
      * @param array $resultset
      * @return string
@@ -218,7 +219,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param array $resultset
      * @param User $user
@@ -228,15 +229,15 @@ class ContentMailBuilder extends AMailBuilder
     {
         $controller = \Yii::$app->controller;
         $view = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_footer", ['user' => $user]);
-        
+
         $ris = $this->renderView(AmosNotify::getModuleName(), "content_footer", [
             'user' => $user,
             'original' => $view
         ]);
-        
+
         return $ris;
     }
-    
+
     /**
      * @param array $resultset
      * @return string
@@ -247,8 +248,8 @@ class ContentMailBuilder extends AMailBuilder
         $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_footer", ['user' => $user]);
         return $ris;
     }
-    
-    
+
+
     /**
      * @param $resultSetNormal
      * @param $resultSetNetwork
@@ -259,23 +260,23 @@ class ContentMailBuilder extends AMailBuilder
     protected function renderEmailMultipleSections($resultSetNormal, $resultSetNetwork, $resultSetComments, $user)
     {
         $mail = '';
-        
+
         try {
-            
+
             // ------------ NOTIFICATION SECTION  WITHOUT NETWORK SCOPE -------------
             $mail .= $this->renderSectionWitoutScope($resultSetNormal, $user);
-            
+
             // ------------ NOTIFICATION SECTION WITH NETWORK SCOPE  -------------
             $mail .= $this->renderSectionWithScope($resultSetNetwork, $resultSetComments, $user);
-            
+
             $mail .= $this->renderContentFooter($resultSetNormal, $user);
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
         }
-        
+
         return $mail;
     }
-    
+
     /**
      * @param array $resultSetNormal
      * @param User $user
@@ -303,7 +304,7 @@ class ContentMailBuilder extends AMailBuilder
             if (!in_array($notify->class_name . '-' . $notify->content_id, $alreadyAdded) && !is_null($model) && $model->sendCommunication()) {
                 $alreadyAdded[] = $notify->class_name . '-' . $notify->content_id;
                 $arrayModelsToNotifiy[$notify->class_name][] = $model;
-                
+
                 if (strcmp($class_content, $notify->class_name)) {
                     if (!in_array($notify->class_name, $orderModels)) {
                         $orderModels [] = $notify->class_name;
@@ -312,12 +313,13 @@ class ContentMailBuilder extends AMailBuilder
                 }
             }
         }
+
         unset($alreadyAdded);
-        
+
         // render the contents using the order of the models defined in configuration
         foreach ($orderModels as $classname) {
             $model = new $classname();
-            
+
             $isViewPersonalized = false;
             if (!empty($arrayModelsToNotifiy[$classname])) {
                 $modelClassname = ModelsClassname::find()->andWhere(['classname' => $classname])->one();
@@ -341,6 +343,7 @@ class ContentMailBuilder extends AMailBuilder
                 // render list of content of default
                 if (!$isViewPersonalized) {
                     $mail .= $this->renderContentList($arrayModelsToNotifiy[$classname], $user);
+
                 }
             }
         }
@@ -348,7 +351,7 @@ class ContentMailBuilder extends AMailBuilder
 //        $this->logOn( '----------- ');
         return $mail;
     }
-    
+
     /**
      * @param $resultSetNetwork
      * @param $resultSetComments
@@ -363,7 +366,7 @@ class ContentMailBuilder extends AMailBuilder
         $arrayModelsToNotifiyNetwork = [];
         $orderModels = [];
         $orderNetworks = [];
-        
+
         if (isset($resultSetNetwork) and count($resultSetNetwork)) {
             /**
              * $alreadyAdded array used to not send the same content in the same mail
@@ -385,7 +388,7 @@ class ContentMailBuilder extends AMailBuilder
                         }
                         $class_content = $notify->class_name;
                     }
-                    
+
                     // order of community (communities closed first)
                     $networkClassname = ModelsClassname::findOne($notify->models_classname_id);
                     if ($networkClassname->classname == 'open20\amos\community\models\Community') {
@@ -403,7 +406,7 @@ class ContentMailBuilder extends AMailBuilder
             } // foreach
             unset($alreadyAdded);
         } // if $resultSetNetwork
-        
+
         if (isset($resultSetComments) and count($resultSetComments)) {
             // Prepare the array with the comments
             $arrayModelsComments = [];
@@ -417,7 +420,7 @@ class ContentMailBuilder extends AMailBuilder
                 }
             }
         } // if $resultSetNetwork
-        
+
         if (!empty($arrayModelsToNotifiyNetwork)) {
             $mail .= "<tr>
                   <td colspan='2' style='color:#4B4B4B; font-size:22px; font-weight:bold; font-family:sans-serif; padding:20px 0 0 0;'>" . AmosNotify::t('amosnotify', 'Dalle tue community') . "</td></tr> ";
@@ -427,58 +430,60 @@ class ContentMailBuilder extends AMailBuilder
             $modelClassnameNetwork = ModelsClassname::find()->andWhere(['id' => $networkClassnameId])->one();
             $NetworkClassname = $modelClassnameNetwork->classname;
             $i = 1;
-            
+
             // use the order of networks ( first secret communities, and after the rest of communities)
             foreach ($orderNetworks as $networkId) {
                 $modelNetwork = $NetworkClassname::find()->andWhere(['id' => $networkId])->one();
-                $color = NotifyUtility::getTypeOfCommunitycolor($modelNetwork, $i);
-                
-                // render the colored box with the name of the community
-                $mail .= $this->renderNetworkTitle($model, $modelNetwork, $color);
-                foreach ($orderModels as $classname) {
-                    $model = new $classname();
-                    $isViewPersonalized = false;
-                    // Check if the plugin as a personalized view for the summary
-                    if (!empty($arrayModelsToNotifiyNetwork[$networkClassnameId][$networkId][$classname])) {
-                        // render name of the type of content
-                        $mail .= $this->renderContentTitleNetwork($model, $color);
-                        
-                        $modelClassname = ModelsClassname::find()->andWhere(['classname' => $classname])->one();
-                        // render the content list with the personalized view that is inside the content module
-                        if ($modelClassname) {
-                            $module = \Yii::$app->getModule($modelClassname->module);
-                            if (!empty($module->viewPathEmailSummaryNetwork[$classname])) {
-                                $mail .= $this->renderPersonalizedContentListNetwork(
+                if ($modelNetwork) {
+                    $color = NotifyUtility::getTypeOfCommunitycolor($modelNetwork, $i);
+
+                    // render the colored box with the name of the community
+                    $mail .= $this->renderNetworkTitle($modelNetwork, $color);
+                    foreach ($orderModels as $classname) {
+                        $model = new $classname();
+                        $isViewPersonalized = false;
+                        // Check if the plugin as a personalized view for the summary
+                        if (!empty($arrayModelsToNotifiyNetwork[$networkClassnameId][$networkId][$classname])) {
+                            // render name of the type of content
+                            $mail .= $this->renderContentTitleNetwork($model, $color);
+
+                            $modelClassname = ModelsClassname::find()->andWhere(['classname' => $classname])->one();
+                            // render the content list with the personalized view that is inside the content module
+                            if ($modelClassname) {
+                                $module = \Yii::$app->getModule($modelClassname->module);
+                                if (!empty($module->viewPathEmailSummaryNetwork[$classname])) {
+                                    $mail .= $this->renderPersonalizedContentListNetwork(
+                                        $arrayModelsToNotifiyNetwork[$networkClassnameId][$networkId][$classname],
+                                        !empty($arrayModelsComments[$networkClassnameId][$networkId][$classname]) ? $arrayModelsComments[$networkClassnameId][$networkId][$classname] : [],
+                                        $user,
+                                        $module->viewPathEmailSummaryNetwork[$classname],
+                                        $modelNetwork,
+                                        $color);
+                                    $isViewPersonalized = true;
+                                }
+                            }
+
+                            // default view for the summary
+                            // render the content list of default
+                            if (!$isViewPersonalized) {
+                                $mail .= $this->renderContentListNetwork(
                                     $arrayModelsToNotifiyNetwork[$networkClassnameId][$networkId][$classname],
                                     !empty($arrayModelsComments[$networkClassnameId][$networkId][$classname]) ? $arrayModelsComments[$networkClassnameId][$networkId][$classname] : [],
                                     $user,
-                                    $module->viewPathEmailSummaryNetwork[$classname],
                                     $modelNetwork,
                                     $color);
-                                $isViewPersonalized = true;
                             }
                         }
-                        
-                        // default view for the summary
-                        // render the content list of default
-                        if (!$isViewPersonalized) {
-                            $mail .= $this->renderContentListNetwork(
-                                $arrayModelsToNotifiyNetwork[$networkClassnameId][$networkId][$classname],
-                                !empty($arrayModelsComments[$networkClassnameId][$networkId][$classname]) ? $arrayModelsComments[$networkClassnameId][$networkId][$classname] : [],
-                                $user,
-                                $modelNetwork,
-                                $color);
-                        }
                     }
+                    $mail .= "</table></td></tr></table></td></tr>";
+                    $i++;
                 }
-                $mail .= "</table></td></tr></table></td></tr>";
-                $i++;
             }
         }
-        
+
         return $mail;
     }
-    
+
     /**
      * @param $resultSetNormal
      * @param User $user
@@ -491,19 +496,19 @@ class ContentMailBuilder extends AMailBuilder
         $class_content = '';
 
 //        try {
-        
+
         // ------------ NOTIFICATION SECTION  WITHOUT NETWORK SCOPE -------------
         $mail .= $this->renderSectionWithClasses($resultSetNormal, $user);
-        
+
         $mail .= $this->renderContentFooter($resultSetNormal, $user);
 
 //        } catch (\Exception $ex) {
 //            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
 //        }
-        
+
         return $mail;
     }
-    
+
     /**
      * @param $resultSetNormal
      * @param User $user
@@ -513,19 +518,19 @@ class ContentMailBuilder extends AMailBuilder
     public function renderSectionWithClasses($resultSetNormal, $user)
     {
         $mail = '';
-        
+
         $class_content = '';
         $orderModels = [];
         $arrayModelsToNotifiy = $resultSetNormal;
         //$this->logOn('renderSectionWithClasses - inizio '); //return;
-        
+
         // render the contents using the order of the models defined in confguration
         //$mail .= '<p>renderSectionWithClasses</p>';
         foreach ($resultSetNormal as $classname => $r) {
             //$this->logOn('renderSectionWithClasses - ' . $classname); //return;
-            
+
             $model = new $classname();
-            
+
             $isViewPersonalized = false;
             //$mail .= '<p>classname ' . $classname . '</p>';
             if (!empty($arrayModelsToNotifiy[$classname])) {
@@ -541,11 +546,11 @@ class ContentMailBuilder extends AMailBuilder
                     else {
                         $mail .= $this->renderContentTitle($model);
                     }
-                    
+
                     if (method_exists($this, 'renderTextBeforeContent')) {
                         $mail .= $this->renderTextBeforeContent($classname);
                     }
-                    
+
                     // -------- CONTENT ------
                     // render list of content personalized
                     if (!empty($module->viewPathEmailSummary[$classname])) {
@@ -569,7 +574,7 @@ class ContentMailBuilder extends AMailBuilder
         //$this->logOn( '----------- ');
         return $mail;
     }
-    
+
     /**
      * @param ModelLabelsInterface $model
      * @return string
@@ -582,7 +587,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param Record[] $model
      * @param User $user
@@ -595,9 +600,10 @@ class ContentMailBuilder extends AMailBuilder
             'arrayModels' => $arrayModels,
             'profile' => $user->userProfile
         ]);
+
         return $ris;
     }
-    
+
     /**
      * @param string $section_title
      * @param string $section_description
@@ -612,7 +618,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param Record[] $model
      * @param User $user
@@ -627,7 +633,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param $arrayModels
      * @param array $arrayModelsComments
@@ -648,7 +654,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param Record[] $model
      * @param User $user
@@ -663,7 +669,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param $arrayModels
      * @param array $arrayModelsComments
@@ -685,7 +691,7 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
      * @param ModelLabelsInterface $model
      * @param string $color
@@ -702,24 +708,23 @@ class ContentMailBuilder extends AMailBuilder
         ]);
         return $ris;
     }
-    
+
     /**
-     * @param Record $model
      * @param $modelNetwork
      * @param string $color
      * @return string
      */
-    protected function renderNetworkTitle(Record $model, $modelNetwork, $color)
+    protected function renderNetworkTitle($modelNetwork, $color)
     {
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/network_title", [
-            'model' => $model,
+            'model' => null,
             'modelNetwork' => $modelNetwork,
             'color' => $color
         ]);
         return $ris;
     }
-    
+
     /**
      * @param $model
      * @param User $user
@@ -729,7 +734,7 @@ class ContentMailBuilder extends AMailBuilder
     protected function renderPersonalizedContentSubtitle($model, $user, $viewPath)
     {
         Console::stdout($user->userProfile->id . PHP_EOL);
-        
+
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [
             'model' => $model,
@@ -746,7 +751,7 @@ class ContentMailBuilder extends AMailBuilder
      */
     protected function renderPersonalizedContentSubtitleLegacy($model, $user, $viewPath)
     {
-        Console::stdout($user->userProfile->id. PHP_EOL);
+        Console::stdout($user->userProfile->id . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [

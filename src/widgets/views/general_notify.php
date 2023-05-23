@@ -94,6 +94,7 @@ $this->registerJs($js);
             ]) ?>
         </div>
     </div>
+    <?= $this->render('_content_notification') ?>
     <?php if (Yii::$app->authManager->checkAccess($widgetModel->user_id, 'MANAGE_REFEREE_CATEGORIES_TICKET_NOTIFICATIONS')): ?>
         <div class="form-group col-xs-12">
             <label class="control-label"><?= AmosNotify::t('amosnotify', 'Vuoi ricevere notifiche relative ai nuovi ticket nel plugin assistenza?') ?></label>
