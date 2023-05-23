@@ -83,7 +83,10 @@ class SuccessfulContentMailBuilder extends ContentMailBuilder
        
         //pr($this->idsCounts[$classname], 'idsCounts: '.$classname);
         //pr($this->idsCountsGlobal[$classname], 'idsCountsGlobal: '.$classname);die();
-       
+        $readMsg = '';
+        $likeMsg = '';
+        $commentsMsg = '';
+
         $message = "id: ".$this->idsCountsGlobal[$classname].
                 "; read: " . $this->idsCounts[$classname][$this->idsCountsGlobal[$classname]]['read']
                 ."; comments: " . $this->idsCounts[$classname][$this->idsCountsGlobal[$classname]]['comments']
@@ -116,7 +119,7 @@ class SuccessfulContentMailBuilder extends ContentMailBuilder
      * @param User $user
      * @return string
      */
-    protected function getFrequencyMessage($frequency)
+    protected function getFrequencyMessage($frequency = null)
     {
         if(is_null($frequency)) {
             $frequency = $this->frequency;

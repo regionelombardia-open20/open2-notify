@@ -9,6 +9,7 @@
  */
 
 namespace open20\amos\notificationmanager\base;
+use open20\amos\notificationmanager\models\NotificationChannels;
 
 
 class NotifyWidgetDoNothing implements NotifyWidget
@@ -20,7 +21,7 @@ class NotifyWidgetDoNothing implements NotifyWidget
      * @param null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOff($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOff($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
 
     }
@@ -31,7 +32,7 @@ class NotifyWidgetDoNothing implements NotifyWidget
      * @param null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOn($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOn($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
 
     }

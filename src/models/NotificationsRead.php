@@ -20,6 +20,7 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $id
  * @property integer $user_id
  * @property integer notification_id
+ * @property integer notification_type
  * @property integer $created_at
  * @property integer $updated_at
  */

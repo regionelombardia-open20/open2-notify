@@ -50,9 +50,9 @@ class NotificationConfContent extends \open20\amos\notificationmanager\models\ba
     }
 
 
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [

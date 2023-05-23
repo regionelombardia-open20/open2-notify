@@ -20,7 +20,7 @@ interface NotifyWidget
      * @param null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOff($uid, $class_name, $externalquery = null, $channel);
+    public function notificationOff($uid, $class_name, $externalquery = null, $channel = 0x0001);
 
     /**
      * @param $uid
@@ -28,7 +28,7 @@ interface NotifyWidget
      * @param null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOn($uid, $class_name, $externalquery = null, $channel);
+    public function notificationOn($uid, $class_name, $externalquery = null, $channel = 0x0001);
 
     /**
      * @param $uid

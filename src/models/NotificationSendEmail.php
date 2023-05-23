@@ -51,9 +51,9 @@ class NotificationSendEmail extends \open20\amos\notificationmanager\models\base
     }
 
 
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [

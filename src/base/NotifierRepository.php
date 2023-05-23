@@ -117,7 +117,7 @@ class NotifierRepository
      * @param NotificationChannels $channel
      * @return bool
      */
-    public function notificationOff($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOff($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         $allOk = true;
         try {
@@ -169,7 +169,7 @@ class NotifierRepository
      * @param int $channel
      * @return bool
      */
-    public function notificationOn($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOn($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         $allOk = true;
         try {

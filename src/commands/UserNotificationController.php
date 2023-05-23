@@ -37,6 +37,8 @@ use yii\db\Query;
 use yii\console\Controller;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
+use yii\log\Logger;
+use Exception;
 
 /**
  * Class UserNotificationController
@@ -995,6 +997,7 @@ class UserNotificationController extends NotifierController
                             //Console::stdout( 'trovati: '.count($results[$classname]). PHP_EOL); //return;
 
                             unset($cwhActiveQuery);
+                            unset($queryModel);
                         }
                     } // $cwhModule
                     
@@ -1008,15 +1011,13 @@ class UserNotificationController extends NotifierController
                     }
 
                     Console::stdout('End working on user ' . $uid . PHP_EOL);
-                    unset($query);
-
-
+                    
                     Console::stdout('---- ' . PHP_EOL);
                     $transaction->commit();
                     $transaction = null;
                     gc_collect_cycles();
-                } // if $notificationconf
-            } // foreach user
+                } 
+            }
 //        } catch (\Exception $e) {
 //            if(!is_null($transaction))
 //            {

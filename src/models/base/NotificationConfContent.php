@@ -84,6 +84,6 @@ class  NotificationConfContent extends \open20\amos\core\record\Record
      */
     public function getNotificationConf()
     {
-        return $this->hasOne(\open20\amos\notificationmanager\models\Notificationconf::className(), ['id' => 'notification_conf_id']);
+        return $this->hasOne(\open20\amos\notificationmanager\models\NotificationConf::className(), ['id' => 'notification_conf_id']);
     }
 }

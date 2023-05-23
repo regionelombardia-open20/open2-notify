@@ -17,12 +17,10 @@ use \open20\amos\core\controllers\CrudController;
 use open20\amos\notificationmanager\models\NotificationSendEmail;
 use open20\amos\notificationmanager\models\NotificationsRead;
 use open20\amos\notificationmanager\models\NotificationContentLanguage;
-use ReflectionClass;
 use Yii;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\db\ActiveRecord;
-use yii\helpers\VarDumper;
 use yii\log\Logger;
 use yii\web\Application;
 
@@ -326,7 +324,20 @@ class NotifyBehavior extends Behavior
                     } else {
                         $notify->updated_at = null;
                     }
+
                     if (!empty($notify)) {
+                        if (empty($notify->models_classname_id)) {
+                            $module =  \Yii::$app->controller->module->getModuleName();
+                            $modelsClassname = ModelsClassname::find()
+                                ->andWhere(['module' => $module])
+                                ->one();
+
+                            if (!empty($modelsClassname)) {
+                                $notify->models_classname_id = $modelsClassname->id;
+                            }
+            
+                        }
+
                         $canSave = true;
                         if ($model instanceof \open20\amos\core\interfaces\NotificationPersonalizedQueryInterface) {
                             $canSave = $model->canSaveNotification();
@@ -339,8 +350,7 @@ class NotifyBehavior extends Behavior
                     }
                 }
             }
-        } catch
-        (Exception $bex) {
+        } catch (Exception $bex) {
             Yii::getLogger()->log($bex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }

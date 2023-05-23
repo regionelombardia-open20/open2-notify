@@ -69,16 +69,16 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
 {
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
-    public $confirmEmailNotification = false;
-    
-    
+
     /**
      * If notification frequency for network contents needs to be set differently.
      * Allows desired NotificationsConfOpt::EMAIL_<FREQUENCY>
      * @var null|int
      */
     public $defaultNetworkSchedule = null;
-    
+
+    public $confirmEmailNotification = false;
+        
     /**
      *  disable notification for default behavior.
      *  enable notification only with post parameter: saveNotificationSendEmail = 1
@@ -203,6 +203,12 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @var array
      */
     public $addNotificationWithoutCwh = [];
+
+    /**
+     * @var bool
+     */
+    public $enableCachedNotificationContents = false;
+
     /**
      * @inheritdoc
      */
@@ -327,7 +333,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @param ActiveQuery|null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOff($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOff($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         try {
             $repository = new NotifierRepository();
@@ -343,7 +349,7 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @param ActiveQuery|null $externalquery
      * @param NotificationChannels $channel
      */
-    public function notificationOn($uid, $class_name, $externalquery = null, $channel)
+    public function notificationOn($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         try {
             $repository = new NotifierRepository();

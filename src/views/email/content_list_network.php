@@ -132,6 +132,6 @@ foreach ($arrayModels as $model) {
     </tr>
 
 
-<?php } ?>
+<?php } 
 
 
