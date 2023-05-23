@@ -70,6 +70,15 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
     public $batchFromDate; // format 'yyyy-mm-dd'
     public $defaultSchedule = NotificationsConfOpt::EMAIL_DAY;
     public $confirmEmailNotification = false;
+    
+    
+    /**
+     * If notification frequency for network contents needs to be set differently.
+     * Allows desired NotificationsConfOpt::EMAIL_<FREQUENCY>
+     * @var null|int
+     */
+    public $defaultNetworkSchedule = null;
+    
     /**
      *  disable notification for default behavior.
      *  enable notification only with post parameter: saveNotificationSendEmail = 1
@@ -194,12 +203,6 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @var array
      */
     public $addNotificationWithoutCwh = [];
-
-    /**
-     * @var bool
-     */
-    public $enableCachedNotificationContents = false;
-
     /**
      * @inheritdoc
      */

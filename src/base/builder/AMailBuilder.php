@@ -87,7 +87,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
 
                     $ok = false;
                     if($contentNotificationEnabled || $checkContentPubblication == false){
-                        $ok = $email->sendMail($from, $user->email, $subject, $message);
+                        $ok = $email->sendMail($from, [$user->email], $subject, $message);
                     }
 
                     if (!$ok) {
@@ -163,10 +163,10 @@ abstract class AMailBuilder extends BaseObject implements Builder
             foreach ($userIds as $id) {
                 $user = User::findOne($id);
                 if (!is_null($user)) {
-
                     $this->setUserLanguage($id);
                     $subject = $this->getSubject($resultset);
                     $message = $this->renderEmailMultipleSections($resultset, $resultsetNetwork, $resultsetComments, $user);
+
                     $mailModule = Yii::$app->getModule("email");
                     $mailModule->defaultLayout = 'layout_summary_notify';
 
@@ -177,9 +177,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
                         // Use default platform email assistance
                         $from = Yii::$app->params['email-assistenza'];
                     }
-
                     $ok = $email->sendMail($from, [$user->email], $subject, $message);
-
                     if (!$ok) {
                         Yii::getLogger()->log("Errore invio mail da '$from' a '$user->email'", \yii\log\Logger::LEVEL_ERROR);
                         $allOk = false;
@@ -203,7 +201,7 @@ abstract class AMailBuilder extends BaseObject implements Builder
         $allOk = true;
         $this->logOn('AMailBuilder - inizio ');
 
-        try {
+//        try {
             foreach ($userIds as $id) {
                 $user = User::findOne($id);
                 if (!is_null($user)) {
@@ -232,10 +230,10 @@ abstract class AMailBuilder extends BaseObject implements Builder
                     }
                 }
             }
-        } catch (\Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
-            $allOk = false;
-        }
+//        } catch (\Exception $ex) {
+//            Yii::getLogger()->log($ex->getTraceAsString(), \yii\log\Logger::LEVEL_ERROR);
+//            $allOk = false;
+//        }
         return $allOk;
     }
 
@@ -244,14 +242,12 @@ abstract class AMailBuilder extends BaseObject implements Builder
      */
     protected function setUserLanguage($userId)
     {
-        $lang = 'it-IT';
         $module = \Yii::$app->getModule('translation');
         if ($module && !empty($module->enableUserLanguage) && $module->enableUserLanguage == true) {
             /** @var \open20\amos\translation\AmosTranslation $module */
             $lang = $module->getUserLanguage($userId);
             $module->setAppLanguage($lang);
         }
-        return $lang;
     }
     
     /**

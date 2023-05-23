@@ -81,7 +81,9 @@ foreach ($arrayModels as $model) {
                 <tr>
                     <td width="400">
                         <table width="100%">
-                            prova 3
+                            <tr>
+                                <td style="font-size:11px; color:#4b4b4b; font-weight:bold;font-family: sans-serif;"><?= Yii::$app->formatter->asDate($model->created_at, 'yyyy-MM-dd') ?></td>
+                            </tr>
                             <tr>
                                 <?=
                                 \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([

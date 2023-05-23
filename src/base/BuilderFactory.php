@@ -11,11 +11,11 @@
 
 namespace open20\amos\notificationmanager\base;
 
+use open20\amos\notificationmanager\base\builder\BookmarksValidatorsMailBuilder;
 use open20\amos\notificationmanager\base\builder\ContactAcceptedMailBuilder;
 use open20\amos\notificationmanager\base\builder\ContentImmediateMailBuilder;
 use open20\amos\notificationmanager\base\builder\ContentMailBuilder;
 use open20\amos\notificationmanager\base\builder\CustomMailBuilder;
-use open20\amos\notificationmanager\base\builder\CachedContentMailBuilder;
 use open20\amos\notificationmanager\base\builder\NewsletterBuilder;
 use open20\amos\notificationmanager\base\builder\SleepingUserMailBuilder;
 use open20\amos\notificationmanager\base\builder\SuccessfulContentMailBuilder;
@@ -33,7 +33,6 @@ use yii\base\BaseObject;
 class BuilderFactory extends BaseObject
 {
     const CONTENT_MAIL_BUILDER = 1;
-    const CONTENT_MAIL_CACHED_BUILDER = 12;
     const VALIDATORS_MAIL_BUILDER = 2;
     const VALIDATED_MAIL_BUILDER = 3;
     const CUSTOM_MAIL_BUILDER = 4;
@@ -44,6 +43,7 @@ class BuilderFactory extends BaseObject
     const CONTENT_SUGGESTED_LINK_BUILDER = 9;
     const CONTENT_CONTACT_ACCEPTED_BUILDER = 10;
     const NEWSLETTER_BUILDER = 11;
+    const BOOKMARKS_VALIDATORS_MAIL_BUILDER = 12;
     
     /**
      * @param int $type
@@ -58,9 +58,6 @@ class BuilderFactory extends BaseObject
         switch ($type) {
             case self::CONTENT_MAIL_BUILDER:
                 $obj = new ContentMailBuilder();
-                break;
-            case self::CONTENT_MAIL_CACHED_BUILDER:
-                $obj = new CachedContentMailBuilder();
                 break;
             case self::CONTENT_IMMEDIATE_MAIL_BUILDER:
                 $obj = new ContentImmediateMailBuilder();
@@ -91,6 +88,9 @@ class BuilderFactory extends BaseObject
                 break;
             case self::NEWSLETTER_BUILDER:
                 $obj = new NewsletterBuilder();
+                break;
+            case self::BOOKMARKS_VALIDATORS_MAIL_BUILDER:
+                $obj = new BookmarksValidatorsMailBuilder();
                 break;
         }
         

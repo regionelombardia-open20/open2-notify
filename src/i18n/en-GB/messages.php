@@ -129,5 +129,6 @@ return [
     '#with_comment' => 'Comment:',
     'collegati' => 'connect',
     'Vuoi ricevere notifiche dalla piattaforma {NomePiattaforma}?' => 'Do you want to receive notifications from the {PlatformName} platform?',
-    'Indica la frequenza con cui ricevere email di riepilogo dalla piattaforma {NomePiattaforma}' => 'Indicates the frequency with which to receive summary emails from the platform {PlatformName}'
+    'Indica la frequenza con cui ricevere email di riepilogo dalla piattaforma {NomePiattaforma}' => 'Indicates the frequency with which to receive summary emails from the platform {PlatformName}',
+    '#publish_request_bookmark_email_subject' => 'Bookmark publication request',
 ];

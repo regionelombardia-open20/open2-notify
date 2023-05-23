@@ -16,9 +16,6 @@ use open20\amos\notificationmanager\AmosNotify;
  * @var \open20\amos\core\user\User $user
  */
 
-if (!empty($user)) {
-    $this->params['profile'] = $user->userProfile;
-}
 ?>
 
 <div style="box-sizing:border-box;color:#000000;">
