@@ -450,23 +450,30 @@ class NotifierController extends Controller
                                 // Get the netowrks to not notify
                                 $notificationNetworkConfDontNotify = NotifyUtility::getNetworkNotificationConf($uid,
                                     $type);
+								
+									
                                 $networkConfArray = [];
                                 foreach ($notificationNetworkConfDontNotify as $networkConf) {
-                                    $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
+                                   // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
+								    $networkConfArray[] = $networkConf;
                                 }
+									
+								
                                 $networkConfArray = $this->setOtherExclusions($networkConfArray, $uid);
+								
+								
                                 if (!empty($networkConfArray)) {
-                                    foreach ($networkConfArray as $classname_id => $record_id) {
+                                    foreach ($networkConfArray as $na) {
 
-                                        if (!empty($classname_id) && !empty($record_id)) {
+                                        if (!empty($na->models_classname_id) && !empty($na->record_id)) {
                                             $query->andWhere(['or',
                                                 [
                                                     'AND',
-                                                    ['models_classname_id' => $classname_id],
-                                                    ['!=', 'record_id', $record_id]
+                                                    ['models_classname_id' => $na->models_classname_id],
+                                                    ['!=', 'record_id', $na->record_id]
                                                 ],
                                                 ['and',
-                                                    ['!=', 'models_classname_id', $classname_id],
+                                                    ['!=', 'models_classname_id', $na->models_classname_id],
                                                 ],
                                                 ['or',
                                                     ['IS', 'models_classname_id', null],
@@ -641,8 +648,13 @@ class NotifierController extends Controller
                     ])->select('community_id')
                         ->all();
                     if (!empty($search)) {
-                        foreach ($search as $community) {
-                            $networkConfArray[$classnameId->id] = $community->id;
+                        foreach ($search as $communityUserMm) {
+                          //  $networkConfArray[$classnameId->id] = $communityUserMm->community_id;
+						  // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
+						  $notify =  AmosNotify::instance()->createModel('NotificationconfNetwork');
+						  $notify->models_classname_id = $classnameId->id;
+						  $notify->record_id = $communityUserMm->community_id;
+						  $networkConfArray[] = $notify;
                         }
                     }
                 }

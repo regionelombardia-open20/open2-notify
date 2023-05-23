@@ -257,7 +257,7 @@ class NotifyUtility extends BaseObject
      */
     public function setDefaultNotificationsConfs($userId)
     {
-        $emailFrequency = NotificationsConfOpt::EMAIL_DAY;
+        $emailFrequency = $this->notifyModule->defaultSchedule;
         $smsFrequency = 0;
         $params = [
             'notifications_enabled' => 1,
