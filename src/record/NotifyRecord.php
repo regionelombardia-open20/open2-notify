@@ -114,12 +114,17 @@ class NotifyRecord extends \open20\amos\core\record\Record implements NotifyReco
                 ]
             ];
         } else {
+            $logout_date = \Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout;
+            if(empty($logout_date)){
+                $logout_date = date('Y-m-d H:i:s', strtotime("01/01/1970"));
+                //var_dump($logout_date); die;
+            }
             return [
                 'attributes' => [
                     $this->orderAttribute,
                     'isNew' => [
-                        'asc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".\Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout."'"),
-                        'desc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".\Yii::$app->getUser()->getIdentity()->getProfile()->ultimo_logout."' DESC"),
+                        'asc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".$logout_date."'"),
+                        'desc' => new Expression($this->tableName().".".self::$isNewsFiledName." > '".$logout_date."' DESC"),
                         'default' => SORT_DESC,
                     ],
                     'id'

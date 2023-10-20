@@ -257,7 +257,7 @@ class NotifyBehavior extends Behavior
             }
             if (property_exists($model, 'destinatari')) {
                 $destinatari = $model->destinatari;
-                if (count($destinatari) > 0) {
+                if (!is_null($destinatari) && count($destinatari > 0)) {
                     $destinatarioCommunity = $destinatari[0];
                 }
             }
