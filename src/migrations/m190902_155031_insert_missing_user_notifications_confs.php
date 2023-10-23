@@ -105,6 +105,7 @@ class m190902_155031_insert_missing_user_notifications_confs extends Migration
 
         $isNew = false;
         if ($notificationConf === false) {
+            $notificationConf = [];
             $isNew = true;
             $now = date('Y-m-d H:i:s');
             $notificationConf['user_id'] = $userId;
