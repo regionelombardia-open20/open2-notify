@@ -15,6 +15,9 @@ return [
         'searchParams' => [
             'newsletter' => [
                 'enable' => true
+            ],
+            'notification-schedule' => [
+                'enable' => true
             ]
         ]
     ]

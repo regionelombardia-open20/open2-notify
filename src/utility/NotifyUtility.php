@@ -24,11 +24,13 @@ use open20\amos\notificationmanager\models\base\NotificationConfContent;
 use open20\amos\notificationmanager\models\NotificationConf;
 use open20\amos\notificationmanager\models\NotificationconfNetwork;
 use open20\amos\notificationmanager\models\NotificationLanguagePreferences;
+use open20\amos\notificationmanager\models\NotificationScheduleContent;
 use open20\amos\notificationmanager\models\NotificationsConfOpt;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
+use yii\helpers\Console;
 
 /**
  * Class NotifyUtility
@@ -65,7 +67,7 @@ class NotifyUtility extends BaseObject
             return false;
         }
         // Check the params presence
-        if (!$emailFrequency && !$smsFrequency) {
+        if (!$emailFrequency && !$smsFrequency && !$this->notifyModule->disableUserNotificationConfiguration) {
             return false;
         }
         /** @var NotificationConf $notificationConfModel */
@@ -238,7 +240,8 @@ class NotifyUtility extends BaseObject
      * @return bool
      * @throws InvalidConfigException
      */
-    public static function isDefaultUserNotificationFrequency($userId, $notificationType, string $channel = 'email') {
+    public static function isDefaultUserNotificationFrequency($userId, $notificationType, string $channel = 'email')
+    {
         $default = AmosNotify::instance()->defaultSchedule;
         $nc = NotificationConf::find()->andWhere(['user_id' => $userId])->one();
         if (!empty($nc->$channel)) {
@@ -273,7 +276,7 @@ class NotifyUtility extends BaseObject
          * default dell'utente. Nel caso che la frequenza di default dell'utente sia la stessa del cron allora NON
          * verranno esclusi i network che hanno null come impostazione
          */
-        if(self::isDefaultUserNetworkNotificationFrequency($userId, $notificationType)) {
+        if (self::isDefaultUserNetworkNotificationFrequency($userId, $notificationType)) {
             $query->andWhere(['!=', 'email', $notificationType]);
             $query->andWhere(['IS NOT', 'email', null]);
         } else {
@@ -628,15 +631,16 @@ class NotifyUtility extends BaseObject
         } // $debugMe
         return $results;
     }
-    
+
     /**
      * @param $userId
      * @param $notificationType
      * @param string $channel
      * @return bool
      * @throws InvalidConfigException
-    */
-    public static function isDefaultUserNetworkNotificationFrequency($userId, $notificationType, string $channel = 'email') {
+     */
+    public static function isDefaultUserNetworkNotificationFrequency($userId, $notificationType, string $channel = 'email')
+    {
         $default = !is_null(AmosNotify::instance()->defaultNetworkSchedule) ? AmosNotify::instance()->defaultNetworkSchedule : AmosNotify::instance()->defaultSchedule;
         $nc = NotificationConf::find()->andWhere(['user_id' => $userId])->one();
         if (!empty($nc->$channel)) {
@@ -644,7 +648,7 @@ class NotifyUtility extends BaseObject
         }
         return ($notificationType == $default);
     }
-    
+
 
     /**
      * @param $filename
@@ -652,7 +656,7 @@ class NotifyUtility extends BaseObject
      * @param string $startOrEnd
      * @param null $previousMicrotime
      * @return string
-    */
+     */
     public static function debugDurationMicrotime($filename, $message, string $startOrEnd = 'start', $previousMicrotime = null)
     {
         $enableDebug = false;
@@ -672,5 +676,76 @@ class NotifyUtility extends BaseObject
             fclose($myfile);
         }
         return $currentMicrotime;
+    }
+
+    /**
+     * @param $model
+     * @return string
+     */
+    public static function getEmailValidatorTitle($model)
+    {
+        if ($model->modelClassName == 'open20\amos\documenti\models\Documenti' && \Yii::$app->getModule('documenti')) {
+            $title = $model->titolo;
+            $title = \open20\amos\documenti\models\DocumentiCartellePath::getPath($model) . $title;
+            if (\Yii::$app->getModule('cwh')) {
+                $cwhconfig = \open20\amos\cwh\models\CwhConfigContents::findOne(['classname' => $model->modelClassName]);
+                $cwhPubb = \open20\amos\cwh\models\CwhPubblicazioni::find()->andWhere(['content_id' => $model->id])->andWhere(['cwh_config_contents_id' => $cwhconfig->id])->one();
+                if (!is_null($cwhPubb)) {
+                    $cwhPubblNodiVal = \open20\amos\cwh\models\CwhPubblicazioniCwhNodiValidatoriMm::findOne(['cwh_pubblicazioni_id' => $cwhPubb->id]);
+                    $idCommunity = explode('-', $cwhPubblNodiVal->cwh_nodi_id);
+                    $community = \open20\amos\community\models\Community::findOne(['id' => $idCommunity[1]]);
+                    $title = \open20\amos\documenti\utility\DocumentsUtility::getPercorsoCommunity($community, $title);
+                }
+            }
+        } else {
+            $title = $model->getTitle();
+        }
+        return $title;
+    }
+
+    /**
+     * @param string $from
+     * @param string $communityName
+     * @return string
+     */
+    public static function getFromEmailWithCommunityName(string $from, string $communityName): string
+    {
+        $firstSpacePosition = strpos($from, ' ');
+        if ($firstSpacePosition !== false) {
+            $email = substr($from, 0, $firstSpacePosition);
+            $platformEmailName = htmlspecialchars_decode(trim(substr($from, $firstSpacePosition + 1)));
+            $from = $email . ' ' . htmlspecialchars_decode($communityName) . ' | ' . $platformEmailName;
+        }
+
+        return $from;
+    }
+
+    /**
+     * @param $string
+     * @return void
+     */
+    public static function printConsole($string){
+        if(\Yii::$app instanceof yii\console\Application) {
+            Console::stdout($string);
+        }
+    }
+
+    /**
+     * @param $modelContent
+     * @return bool
+     * @throws \Exception
+     */
+    public static function canNotifyContentPublishDate($modelContent){
+        $now = new \DateTime();
+        if (method_exists($modelContent, 'getPublicatedFrom')) {
+            $publicatedFrom = $modelContent->getPublicatedFrom();
+            if (!empty($publicatedFrom)) {
+                $datePubblicazioneStart = new \DateTime($publicatedFrom);
+                if ($datePubblicazioneStart > $now) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

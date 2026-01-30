@@ -130,12 +130,20 @@ class NotificationSchedule extends \open20\amos\notificationmanager\models\base\
      * @param $arrayNotificationComments
      * @return NotificationSchedule
      */
-    public static function createSchedule($arrayNotifications, $arrayNotificationComments, $type, $maxUserIdToSend)
+    public static function createSchedule($arrayNotifications, $arrayNotificationComments, $type, $maxUserIdToSend, $segmentationInfos)
     {
+
         $schedule = new NotificationSchedule();
-        $schedule->status = NotificationSchedule::STATUS_WORKING;
         $schedule->type = $type;
         $schedule->max_user_id_to_notify = $maxUserIdToSend;
+        if(empty($maxUserIdToSend)){
+            $schedule->status = NotificationSchedule::STATUS_DONE;
+        }else{
+            $schedule->status = NotificationSchedule::STATUS_WORKING;
+        }
+        if(isset($segmentationInfos['offset'])){
+            $schedule->start_user_id =  $segmentationInfos['offset'];
+        }
         $schedule->save(false);
         foreach ($arrayNotifications as $notification) {
             $notifyContent = new NotificationScheduleContent();

@@ -20,6 +20,7 @@ use open20\amos\notificationmanager\models\NotificationContentLanguage;
 use Yii;
 use yii\base\Behavior;
 use yii\base\Exception;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\log\Logger;
 use yii\web\Application;
@@ -272,14 +273,15 @@ class NotifyBehavior extends Behavior
 
 //                    $notify = $this->notifyModule->createModel('Notification')->findOne(['content_id' => $model->getAttributes()[$model->primaryKey()[0]],
 //                    'channels' => $channel, 'class_name' => get_class($model) ]);
+                    /**
+                     * @var $a ActiveQuery
+                     */
                     $notify = $this->notifyModule->createModel('Notification')->find()
-                        ->leftJoin('notificationread', 'notificationread.notification_id = notification.id')
                         ->andWhere([
                             'content_id' => $model->getAttributes()[$model->primaryKey()[0]],
                             'channels' => $channel,
                             'class_name' => get_class($model)
-                        ])
-                        ->andWhere(['notificationread.notification_id' => null])->one();
+                        ])->one();
 
 
                     if (empty($notify)) {
@@ -326,18 +328,6 @@ class NotifyBehavior extends Behavior
                     }
 
                     if (!empty($notify)) {
-                        if (empty($notify->models_classname_id)) {
-                            $module =  \Yii::$app->controller->module->getModuleName();
-                            $modelsClassname = ModelsClassname::find()
-                                ->andWhere(['module' => $module])
-                                ->one();
-
-                            if (!empty($modelsClassname)) {
-                                $notify->models_classname_id = $modelsClassname->id;
-                            }
-            
-                        }
-
                         $canSave = true;
                         if ($model instanceof \open20\amos\core\interfaces\NotificationPersonalizedQueryInterface) {
                             $canSave = $model->canSaveNotification();

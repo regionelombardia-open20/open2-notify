@@ -125,7 +125,9 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * ]
      *
      */
-    public $viewPathEmailNotifyValidator = [];
+    public $viewPathEmailNotifyValidator = [
+        'open20\amos\community\models\Bookmarks' => '@vendor/open20/amos-notify/src/views/email/bookmarksValidator'
+    ];
 
     /**
      * @var null |string
@@ -141,6 +143,12 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @var boolean $enableLegacyNotify
      */
     public $enableLegacyNotify = false;
+	
+	/**
+     *
+     * @var boolean $disableUserNotificationConfiguration
+     */
+    public $disableUserNotificationConfiguration = false;
 
     private static $notifyworkflowlistener;
     private static $registerEvent        = false;
@@ -208,6 +216,13 @@ class AmosNotify extends AmosModule implements \yii\base\BootstrapInterface, Not
      * @var bool
      */
     public $enableCachedNotificationContents = false;
+
+    /**
+     * If true, the community name is added to the sender email
+     * only if there are contents of a single community to notify.
+     * @var bool $enableCommunityNameInSenderEmail
+     */
+    public $enableCommunityNameInSenderEmail = false;
 
     /**
      * @inheritdoc

@@ -120,6 +120,9 @@ class NotifierRepository
     public function notificationOff($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         $allOk = true;
+        if(empty($uid)){
+            return false;
+        }
         try {
            $classObj = new $class_name;
             $subquery = new Query();
@@ -172,6 +175,9 @@ class NotifierRepository
     public function notificationOn($uid, $class_name, $externalquery = null, $channel = 0x0001)
     {
         $allOk = true;
+        if(empty($uid)){
+            return false;
+        }
         try {
             $classObj = new $class_name;
             $subquery = new Query();

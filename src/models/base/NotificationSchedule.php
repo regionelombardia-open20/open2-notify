@@ -20,6 +20,7 @@ use Yii;
  * @property integer $created_by
  * @property integer $updated_by
  * @property integer $deleted_by
+ * @property integer $start_user_id
  *
  * @property \open20\amos\notificationmanager\models\User $lastNotifiedUser
  * @property \open20\amos\notificationmanager\models\NotificationScheduleContent[] $notificationScheduleContents
@@ -43,7 +44,7 @@ class  NotificationSchedule extends \open20\amos\core\record\Record
     {
         return [
             [['type', 'last_notified_user_id', 'created_by', 'updated_by', 'deleted_by','max_user_id_to_notify'], 'integer'],
-            [['ended_at', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['start_user_id','ended_at', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['status'], 'string', 'max' => 255],
             [['last_notified_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['last_notified_user_id' => 'id']],
         ];

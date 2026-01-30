@@ -9,7 +9,10 @@
  * @category   CategoryName
  */
 
+use open20\amos\admin\AmosAdmin;
 use open20\amos\core\interfaces\ModelGrammarInterface;
+
+
 use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\core\helpers\Html;
 use open20\amos\cwh\base\ModelContentInterface;
@@ -17,12 +20,16 @@ use open20\amos\cwh\base\ModelContentInterface;
 if(!empty($profile)) {
     $this->params['profile'] = $profile;
 }
-
+/** @var \open20\amos\core\record\Record $model */
 /** @var ModelGrammarInterface $modelGrammar */
 $modelGrammar = $model->getGrammar();
 $articleSingular = $modelGrammar->getArticleSingular();
 $spaceAfterArticleSingular = (substr($articleSingular, -1) == "'" ? '' : ' ');
 $notifyModule = AmosNotify::instance();
+
+/** @var AmosAdmin $adminModule */
+$adminModule = AmosAdmin::instance();
+$title = \open20\amos\notificationmanager\utility\NotifyUtility::getEmailValidatorTitle($model);
 ?>
 
 <div>
@@ -77,6 +84,10 @@ $notifyModule = AmosNotify::instance();
                     'layout' => $layout,
                 ]) ?>
             </div>
+        </div>
+
+        <div style="width:100%;margin-top:30px">
+            in: <?= $title ?>
         </div>
 
         <div style="width:100%;margin-top:30px">

@@ -38,6 +38,9 @@ class CachedContentMailBuilder extends AMailBuilder
     public static $cacheModuleConfigs = [];
     public static $cacheComments = [];
 
+    public $simulateEmailReceiver = '';
+    public $outputEmailText = '';
+
     /**
      * @return string
      */
@@ -215,7 +218,7 @@ class CachedContentMailBuilder extends AMailBuilder
      */
     protected function renderUserProfileList($arrayModels, $user)
     {
-        Console::stdout('user profile' . PHP_EOL);
+        NotifyUtility::printConsole('user profile' . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/userprofile_list", [
@@ -235,7 +238,7 @@ class CachedContentMailBuilder extends AMailBuilder
      */
     protected function renderContentListNetwork($arrayModels, $arrayModelsComments, $user, $modelNetwork, $color)
     {
-        Console::stdout('CONTENT LIST NETWORK' . PHP_EOL);
+        NotifyUtility::printConsole('CONTENT LIST NETWORK' . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/content_list_network", [
@@ -255,7 +258,7 @@ class CachedContentMailBuilder extends AMailBuilder
      */
     protected function renderPersonalizedContentList($arrayModels, $user, $viewPath)
     {
-        Console::stdout('CONTENT LIST PERSONLIZED' . PHP_EOL);
+        NotifyUtility::printConsole('CONTENT LIST PERSONLIZED' . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [
@@ -276,7 +279,7 @@ class CachedContentMailBuilder extends AMailBuilder
      */
     protected function renderPersonalizedContentListNetwork($arrayModels, $arrayModelsComments, $user, $viewPath, $modelNetwork, $color)
     {
-        Console::stdout('CONTENT LIST NETWORK PERSONALIZED' . PHP_EOL);
+        NotifyUtility::printConsole('CONTENT LIST NETWORK PERSONALIZED' . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [
@@ -331,7 +334,7 @@ class CachedContentMailBuilder extends AMailBuilder
      */
     protected function renderPersonalizedContentSubtitle($model, $user, $viewPath)
     {
-        Console::stdout($user->userProfile->id . PHP_EOL);
+        NotifyUtility::printConsole($user->userProfile->id . PHP_EOL);
 
         $controller = \Yii::$app->controller;
         $ris = $controller->renderPartial($viewPath, [
@@ -354,10 +357,10 @@ class CachedContentMailBuilder extends AMailBuilder
         $classname = get_class($model);
         $idContent = $model->id;
         if (!empty(self::$cacheRenderedContents[$lang]['general'][$classname][$idContent])) {
-            Console::stdout("***CACHED - $lang" . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
+            NotifyUtility::printConsole("***CACHED - $lang" . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
             return self::$cacheRenderedContents[$lang]['general'][$classname][$idContent];
         } else {
-            Console::stdout("NOT CACHED - $lang" . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
+            NotifyUtility::printConsole("NOT CACHED - $lang" . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
             $html = \Yii::$app->controller->renderPartial($view, ['notifyModule' => $notifyModule, 'model' => $model]);
             self::$cacheRenderedContents[$lang]['general'][$classname][$idContent] = $html;
             return $html;
@@ -379,14 +382,14 @@ class CachedContentMailBuilder extends AMailBuilder
 
         $classname = get_class($model);
         $idContent = $model->id;
-//        Console::stdout($model->id.' '.$classname.PHP_EOL);
+//        NotifyUtility::printConsole($model->id.' '.$classname.PHP_EOL);
         if ($modelNetwork) {
             $idCommunity = $modelNetwork->id;
             if (!empty(self::$cacheRenderedContents[$lang]['community'][$idCommunity][$classname][$idContent])) {
-                Console::stdout("***CACHED - " . " ID: " . $model . ' ' . $classname . PHP_EOL);
+                NotifyUtility::printConsole("***CACHED - " . " ID: " . $model . ' ' . $classname . PHP_EOL);
                 return self::$cacheRenderedContents[$lang]['community'][$idCommunity][$classname][$idContent];
             } else {
-                Console::stdout("NOT CACHED - " . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
+                NotifyUtility::printConsole("NOT CACHED - " . " ID: " . $model->id . ' ' . $classname . PHP_EOL);
                 $html = \Yii::$app->controller->renderPartial($view, ['notifyModule' => $notifyModule, 'model' => $model, 'renderedComments' => $renderedComments]);
                 self::$cacheRenderedContents[$lang]['community'][$idCommunity][$classname][$idContent] = $html;
                 return $html;
@@ -409,12 +412,12 @@ class CachedContentMailBuilder extends AMailBuilder
     {
         if (!empty($notification['models_classname_id']) && $modelClassnameCommunityId == $notification['models_classname_id']) {
 //            if($notification['record_id']==6288){
-//                Console::stdout('---------------------NETWORK'.PHP_EOL);
+//                NotifyUtility::printConsole('---------------------NETWORK'.PHP_EOL);
 //            }
             self::renderContentNetworkItemMemoized($viewPath, $model, $modelNetwork, $notifyModule, $renderedComments);
         } else {
 //            if($notification['record_id']==6288){
-//                Console::stdout('---------------------GENERALE'.PHP_EOL);
+//                NotifyUtility::printConsole('---------------------GENERALE'.PHP_EOL);
 //            }
             self::renderContentGeneralItemMemoized($viewPath, $model, $notifyModule);
         }
@@ -432,7 +435,7 @@ class CachedContentMailBuilder extends AMailBuilder
         if (!empty(self::$cacheRenderedContents[$lang]['extra'][$classname])) {
             return self::$cacheRenderedContents[$lang]['extra'][$classname];
         } else {
-            Console::stdout("NOT CACHED - " . ' extra ' . $classname . PHP_EOL);
+            NotifyUtility::printConsole("NOT CACHED - " . ' extra ' . $classname . PHP_EOL);
             $html = \Yii::$app->controller->renderPartial($viewPath);
             self::$cacheRenderedContents[$lang]['extra'][$classname] = $html;
             return $html;
@@ -562,7 +565,7 @@ class CachedContentMailBuilder extends AMailBuilder
         $modelClassnameCommunityId = null;
         $modelClassnameCommunity = ModelsClassname::find()->andWhere(['table' => 'community'])->one();
         if ($modelClassnameCommunity) {
-//            Console::stdout($modelClassnameCommunity->id. ' '.$modelClassnameCommunity->table.PHP_EOL);
+//            NotifyUtility::printConsole($modelClassnameCommunity->id. ' '.$modelClassnameCommunity->table.PHP_EOL);
             $modelClassnameCommunityId = $modelClassnameCommunity->id;
         }
         $user = User::findOne($userId);
@@ -584,8 +587,7 @@ class CachedContentMailBuilder extends AMailBuilder
                 $alreadyAdded[] = $notify->class_name . '-' . $notify->content_id;
                 // aggiungo i record di notifica dellecommunity
                 if (!empty($notify->models_classname_id) && $notify->models_classname_id == $modelClassnameCommunityId) {
-
-                    if(!empty($cacheCommunities[$notify->record_id])) {
+                    if(!empty( CachedContentMailBuilder::$cacheCommunities[$notify->record_id])) {
                         $network = CachedContentMailBuilder::$cacheCommunities[$notify->record_id];
                         if ($network) {
                             if (in_array($network->community_type_id, [2, 3])) {
@@ -595,7 +597,7 @@ class CachedContentMailBuilder extends AMailBuilder
                             }
                         }
                     }
-//                    Console::stdout("notifyid-commid:".$notify->id.'-'.$notify->record_id.' -> '.$notify->class_name ." ".$notify->content_id. "\n");
+//                    NotifyUtility::printConsole("notifyid-commid:".$notify->id.'-'.$notify->record_id.' -> '.$notify->class_name ." ".$notify->content_id. "\n");
 
                 } else {
                     // aggiungo i record di notifica di carattere generale
@@ -612,17 +614,17 @@ class CachedContentMailBuilder extends AMailBuilder
             }
         }
 
-
 //        unset($alreadyAdded);
-//                Console::stdout(VarDumper::dumpAsString($arrayModelsToNotifyGeneral, 5, false) . "\n");
-//                Console::stdout(VarDumper::dumpAsString($arrayModelsToNotifyNetworkPrivate, 5, false) . "\n");
-//                Console::stdout(VarDumper::dumpAsString($arrayModelsToNotifyNetwork, 5, false) . "\n");
+//                NotifyUtility::printConsole(VarDumper::dumpAsString($arrayModelsToNotifyGeneral, 5, false) . "\n");
+//                NotifyUtility::printConsole(VarDumper::dumpAsString($arrayModelsToNotifyNetworkPrivate, 5, false) . "\n");
+//                NotifyUtility::printConsole(VarDumper::dumpAsString($arrayModelsToNotifyNetwork, 5, false) . "\n");
 
 
 
         // CONTENUTI GENERALI recupero l'html dei contenuti generali
         $totContentsGeneral = 0;
         $emailContentList = '';
+
         $emailLayoutGeneral = \Yii::$app->controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/layout_content_list");
 
         // ciclo le tipologie di contenuti
@@ -642,7 +644,7 @@ class CachedContentMailBuilder extends AMailBuilder
             // ciclo i contentuti
             if (!empty($arrayModelsToNotifyGeneral[$classname])) {
                 foreach ($arrayModelsToNotifyGeneral[$classname] as $content_id) {
-//                    Console::stdout( $content_id."\n");
+//                    NotifyUtility::printConsole( $content_id."\n");
                     if (!empty(self::$cacheRenderedContents[$lang]['general'][$classname][$content_id])) {
                         $i++;
                         $totContentsGeneral++;
@@ -719,7 +721,6 @@ class CachedContentMailBuilder extends AMailBuilder
         $emailLayoutNetwork = str_replace('{{content_list}}', $emailContentListNetwork, $emailLayoutNetwork);
         $emailFooter = $this->renderContentFooter([], $user);
 
-
         $text = $emailLayoutGeneral;
         if ($totContentsNetwork > 0) {
             $text .= $emailLayoutNetwork;
@@ -734,11 +735,11 @@ class CachedContentMailBuilder extends AMailBuilder
 
         //SE NON HO CONTENUTI ESCO
         if ($totContentsGeneral + $totContentsNetwork == 0) {
-            Console::stdout('nessun contenuto'.PHP_EOL);
+            NotifyUtility::printConsole('nessun contenuto'.PHP_EOL);
             return false;
         }
-        Console::stdout('contenuti: ' . $totContentsGeneral . PHP_EOL);
-        Console::stdout('network: ' . $totContentsNetwork . PHP_EOL);
+        NotifyUtility::printConsole('contenuti: ' . $totContentsGeneral . PHP_EOL);
+        NotifyUtility::printConsole('network: ' . $totContentsNetwork . PHP_EOL);
 
         $email = new Email();
         $from = '';
@@ -747,9 +748,14 @@ class CachedContentMailBuilder extends AMailBuilder
             // Use default platform email assistance
             $from = Yii::$app->params['email-assistenza'];
         }
-
-//        Console::stdout("------> " . $user->email . PHP_EOL);
-        $ok = $email->sendMail($from, $user->email, $subject, $text);
+//        NotifyUtility::printConsole("------> " . $user->email . PHP_EOL);
+        $emailReceiver = $user->email;
+        if(!empty($this->simulateEmailReceiver)){
+            $emailReceiver = $this->simulateEmailReceiver;
+            $subject = 'TEST - '.$subject;
+            $this->outputEmailText = $text;
+        }
+        $ok = $email->sendMail($from, $emailReceiver, $subject, $text);
 
     }
 

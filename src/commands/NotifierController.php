@@ -72,11 +72,13 @@ class NotifierController extends Controller
     const TYPE_OF_SECTION_ALL = 'all';
 
     public static $countUsers;
+    public static $exitSegmentation = 0;
 
     /**
      * @var AmosNotify $notifyModule
      */
     public $notifyModule = null;
+    public $debugSqlNotifications = null;
 
     /**
      * @inheritdoc
@@ -101,46 +103,63 @@ class NotifierController extends Controller
      */
     public function actionMailChannel()
     {
-//        try {
-
-        if (!empty($this->disableSegmentation)) {
-            $this->notifyModule->enableSegmentedSend = false;
-        }
-        $enableCachedNotificationContents = $this->notifyModule->enableCachedNotificationContents;
-        if ($this->notifyModule && $this->notifyModule->enableNotificationContentLanguage) {
-            $this->mailChannelWithLanguage();
-        } else {
+        try {
+//            $start = microtime(true);
+//            Console::stdout('start -> ' . microtime(true) . PHP_EOL);
+            if (!empty($this->disableSegmentation)) {
+                $this->notifyModule->enableSegmentedSend = false;
+            }
             $type = $this->evaluateOperations();
-            Console::stdout('Begin mail-channel ' . $type . PHP_EOL);
-            $segmentation = $this->getSegmentation($type);
-            $users = $this->loadUser($type, null, $segmentation['limit'], $segmentation['offset']);
 
-            $factory = new BuilderFactory();
-            if ($type == NotificationsConfOpt::EMAIL_IMMEDIATE) {
-                Console::stdout('BUILD ' . $type . PHP_EOL);
-                $builder = $factory->create(BuilderFactory::CONTENT_IMMEDIATE_MAIL_BUILDER);
+            $enableCachedNotificationContents = ($this->notifyModule->enableCachedNotificationContents && $type == NotificationsConfOpt::EMAIL_DAY);
+            if ($this->notifyModule && $this->notifyModule->enableNotificationContentLanguage) {
+                $this->mailChannelWithLanguage();
             } else {
-                $builderType = BuilderFactory::CONTENT_MAIL_BUILDER;
+                Console::stdout('Begin mail-channel ' . $type . PHP_EOL);
+                $segmentation = $this->getSegmentation($type);
+
+
+                // se sto creando un nuovo schedule resetto l'idice di segmentzione sul server
                 if ($enableCachedNotificationContents) {
-                    $builderType = BuilderFactory::CONTENT_MAIL_CACHED_BUILDER;
+                    $notificationSchedule = NotificationSchedule::notificationScheduled();
+                    if (empty($notificationSchedule)) {
+                        $this->setSegmentationOffset($type, 0);
+                        $segmentation = $this->getSegmentation($type);
+                    }
                 }
-                $builder = $factory->create($builderType);
-            }
 
-            /** @var AmosCwh $cwhModule */
-            $cwhModule = Yii::$app->getModule('cwh');
-            if ($enableCachedNotificationContents) {
-                $this->notifyUserCached($cwhModule, $users, $builder, $type, null, $segmentation['limit']);
-            } else {
-                $this->notifyUserArray($cwhModule, $users, $builder, $type, null, $segmentation['limit']);
+                $users = $this->loadUser($type, null, $segmentation['limit'], $segmentation['offset']);
+
+                $factory = new BuilderFactory();
+                if ($type == NotificationsConfOpt::EMAIL_IMMEDIATE) {
+                    Console::stdout('BUILD ' . $type . PHP_EOL);
+                    $builder = $factory->create(BuilderFactory::CONTENT_IMMEDIATE_MAIL_BUILDER);
+                } else {
+                    $builderType = BuilderFactory::CONTENT_MAIL_BUILDER;
+                    if ($enableCachedNotificationContents) {
+                        $builderType = BuilderFactory::CONTENT_MAIL_CACHED_BUILDER;
+                    }
+                    $builder = $factory->create($builderType);
+                }
+
+                /** @var AmosCwh $cwhModule */
+                $cwhModule = Yii::$app->getModule('cwh');
+                if ($enableCachedNotificationContents) {
+                    $this->notifyUserCached($cwhModule, $users, $builder, $type, null, $segmentation['limit']);
+                } else {
+                    $this->notifyUserArray($cwhModule, $users, $builder, $type, null, $segmentation['limit']);
+                }
+                Console::stdout('End mail-channel ' . $type . PHP_EOL);
+                $exit = $this->getReturnSegmentation($users, $type, $segmentation['limit']);
+
+//                $end = microtime(true);
+//                Console::stdout('end -> ' . ($end - $start) . PHP_EOL);
+
+                return $exit;
             }
-            Console::stdout('End mail-channel ' . $type . PHP_EOL);
-            $exit = $this->getReturnSegmentation($users, $type, $segmentation['limit']);
-            return $exit;
+        } catch (Exception $ex) {
+            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
-//        } catch (Exception $ex) {
-//            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
-//        }
     }
 
     /**
@@ -233,132 +252,148 @@ class NotifierController extends Controller
      * @param int $offset
      * @return array|null
      */
-    protected function loadUser($schedule, $language = null, $limit = 0, $offset = 0, $onlyMaxId = false)
+    public function loadUser($schedule, $language = null, $limit = 0, $offset = 0, $onlyMaxId = false, $user_ids = [])
     {
         $useSegmentation = ($this->notifyModule->enableSegmentedSend && ($limit != $offset));
         $enableCachedNotificationContents = $this->notifyModule->enableCachedNotificationContents;
 
-        $result = null;
-        try {
-            $module = AmosNotify::getInstance();
-            /** @var AmosAdmin $adminModule */
-            $adminModule = Yii::$app->getModule(AmosAdmin::getModuleName());
+//        $result = null;
+//        try {
+        $module = AmosNotify::getInstance();
+        /** @var AmosAdmin $adminModule */
+        $adminModule = Yii::$app->getModule(AmosAdmin::getModuleName());
 
-            $query = new Query();
-            $query->from(UserProfile::tableName());
-            $query->innerJoin(User::tableName(), UserProfile::tableName() . '.user_id = ' . User::tableName() . '.id');
-            $query->leftJoin(NotificationConf::tableName(),
-                NotificationConf::tableName() . '.user_id = ' . UserProfile::tableName() . '.user_id');
+        $query = new Query();
+        $query->from(UserProfile::tableName());
+        $query->innerJoin(User::tableName(), UserProfile::tableName() . '.user_id = ' . User::tableName() . '.id');
+        $query->leftJoin(NotificationConf::tableName(),
+            NotificationConf::tableName() . '.user_id = ' . UserProfile::tableName() . '.user_id');
 
-            if ($this->notifyModule->enableNotificationContentLanguage) {
-                $query->leftJoin('notification_language_preferences',
-                    'notification_language_preferences.user_id = ' . UserProfile::tableName() . '.user_id');
-                $query->andWhere(['OR',
-                    ['notification_language_preferences.language' => $language->language_id],
-                    ['notification_language_preferences.language' => null]
-                ]);
-            }
-
+        if ($this->notifyModule->enableNotificationContentLanguage) {
+            $query->leftJoin('notification_language_preferences',
+                'notification_language_preferences.user_id = ' . UserProfile::tableName() . '.user_id');
             $query->andWhere(['OR',
-                [NotificationConf::tableName() . '.notifications_enabled' => 1],
-                [NotificationConf::tableName() . '.notifications_enabled' => NULL],
+                ['notification_language_preferences.language' => $language->language_id],
+                ['notification_language_preferences.language' => null]
             ]);
-            $query->andWhere([UserProfile::tableName() . '.deleted_at' => null]);
-            $query->andWhere([UserProfile::tableName() . '.attivo' => UserProfile::STATUS_ACTIVE]);
-            $query->andWhere([User::tableName() . '.status' => User::STATUS_ACTIVE]);
-            $checkPrivacy = false;
-            if (
-                $adminModule->confManager->isVisibleBox('box_privacy', ConfigurationManager::VIEW_TYPE_FORM) &&
-                $adminModule->confManager->isVisibleField('privacy', ConfigurationManager::VIEW_TYPE_FORM)
-            ) {
-                $checkPrivacy = true;
-                $query->andWhere([UserProfile::tableName() . '.privacy' => 1]);
-            }
+        }
 
-            // clone the query withou the filter for type o cron
-            $queryConfCommunity = clone $query;
+        $query->andWhere(['OR',
+            [NotificationConf::tableName() . '.notifications_enabled' => 1],
+            [NotificationConf::tableName() . '.notifications_enabled' => NULL],
+        ]);
+        $query->andWhere([UserProfile::tableName() . '.deleted_at' => null]);
+        $query->andWhere([UserProfile::tableName() . '.attivo' => UserProfile::STATUS_ACTIVE]);
+        $query->andWhere([User::tableName() . '.status' => User::STATUS_ACTIVE]);
+        $checkPrivacy = false;
+        if (
+            $adminModule->confManager->isVisibleBox('box_privacy', ConfigurationManager::VIEW_TYPE_FORM) &&
+            $adminModule->confManager->isVisibleField('privacy', ConfigurationManager::VIEW_TYPE_FORM)
+        ) {
+            $checkPrivacy = true;
+            $query->andWhere([UserProfile::tableName() . '.privacy' => 1]);
+        }
 
-            if ($schedule == NotificationsConfOpt::NEWSLETTER) {
-                // If the schedule is newsletter check if the user has the newsletter notifications enabled in his profile.
-                $query->andWhere([NotificationConf::tableName() . '.notify_newsletter' => 1]);
+        // clone the query withou the filter for type o cron
+        $queryConfCommunity = clone $query;
+
+        if ($schedule == NotificationsConfOpt::NEWSLETTER) {
+            // If the schedule is newsletter check if the user has the newsletter notifications enabled in his profile.
+            $query->andWhere([NotificationConf::tableName() . '.notify_newsletter' => 1]);
+        } else {
+            // filter the query for type of cron
+            if ($schedule == $this->notifyModule->defaultSchedule) {
+                $query->andWhere(['or',
+                    [NotificationConf::tableName() . '.email' => $schedule],
+                    [NotificationConf::tableName() . '.email' => null]
+                ]);
             } else {
-                // filter the query for type of cron
-                if ($schedule == $this->notifyModule->defaultSchedule) {
-                    $query->andWhere(['or',
-                        [NotificationConf::tableName() . '.email' => $schedule],
-                        [NotificationConf::tableName() . '.email' => null]
-                    ]);
-                } else {
-                    $query->andWhere([NotificationConf::tableName() . '.email' => $schedule]);
-                }
+                $query->andWhere([NotificationConf::tableName() . '.email' => $schedule]);
             }
+        }
 
-            $query->orderBy([UserProfile::tableName() . '.user_id' => SORT_ASC]);
-            $query->select(UserProfile::tableName() . '.*');
+        $query->orderBy([UserProfile::tableName() . '.user_id' => SORT_ASC]);
+        $query->select(UserProfile::tableName() . '.*');
 
-            // query for network notificatiomn
-            if (!empty($schedule)) {
-                $queryConfCommunity
-                    ->orderBy([UserProfile::tableName() . '.user_id' => SORT_ASC . ', notificationconf_network.*'])
-                    ->select(UserProfile::tableName() . '.*')
-                    ->innerJoin('notificationconf_network', 'notificationconf_network.user_id = user_profile.user_id')
-                    ->andWhere(['IS NOT', 'record_id', null])
-                    ->andWhere(['IS NOT', 'models_classname_id', null])
-                    ->andWhere(['notificationconf_network.email' => $schedule]);
-                if ($useSegmentation == true) {
-                    $queryConfCommunity->andWhere(['>', UserProfile::tableName() . '.user_id', $offset]);
-                    $queryConfCommunity->andWhere(['<=', UserProfile::tableName() . '.user_id', $limit]);
-                }
-                if ($checkPrivacy == true) {
-                    $queryConfCommunity->andWhere([UserProfile::tableName() . '.privacy' => 1]);
-                }
+        // query for network notificatiomn
+        if (!empty($schedule)) {
+            $queryConfCommunity
+                ->orderBy([UserProfile::tableName() . '.user_id' => SORT_ASC . ', notificationconf_network.*'])
+                ->select(UserProfile::tableName() . '.*')
+                ->innerJoin('notificationconf_network', 'notificationconf_network.user_id = user_profile.user_id')
+                ->andWhere(['IS NOT', 'record_id', null])
+                ->andWhere(['IS NOT', 'models_classname_id', null])
+                ->andWhere(['notificationconf_network.email' => $schedule]);
+            if ($useSegmentation == true) {
+                $queryConfCommunity->andWhere(['>', UserProfile::tableName() . '.user_id', $offset]);
+                $queryConfCommunity->andWhere(['<=', UserProfile::tableName() . '.user_id', $limit]);
             }
+            if ($checkPrivacy == true) {
+                $queryConfCommunity->andWhere([UserProfile::tableName() . '.privacy' => 1]);
+            }
+        }
 
 //            $queryConfCommunity->andWhere(['user_profile.user_id' => [1, 4, 5]]);
-            if ($useSegmentation == true) {
-                $query->andWhere(['>', UserProfile::tableName() . '.user_id', $offset]);
-                $query->andWhere(['<=', UserProfile::tableName() . '.user_id', $limit]);
-            }
+        if ($useSegmentation == true) {
+            $query->andWhere(['>', UserProfile::tableName() . '.user_id', $offset]);
+            $query->andWhere(['<=', UserProfile::tableName() . '.user_id', $limit]);
+        }
 
-            // per cached notification
-            if ($enableCachedNotificationContents) {
-                $notificationSchedule = NotificationSchedule::notificationScheduled();
-                if ($notificationSchedule && $notificationSchedule->type == $schedule && $notificationSchedule->last_notified_user_id > 0) {
-                    $query->andWhere(['>', 'user_profile.user_id', $notificationSchedule->last_notified_user_id]);
-                    $queryConfCommunity->andWhere(['>', 'user_profile.user_id', $notificationSchedule->last_notified_user_id]);
+        // per cached notification
+        if ($enableCachedNotificationContents) {
+            $notificationSchedule = NotificationSchedule::notificationScheduled();
+            if ($notificationSchedule && $notificationSchedule->type == $schedule && $notificationSchedule->last_notified_user_id > 0) {
+                $query->andWhere(['>', 'user_profile.user_id', $notificationSchedule->last_notified_user_id]);
+                $queryConfCommunity->andWhere(['>', 'user_profile.user_id', $notificationSchedule->last_notified_user_id]);
+            }
+        }
+
+//        $query->andWhere(['<', 'user_profile.user_id', 20]);
+//        $queryConfCommunity->andWhere(['<', 'user_profile.user_id', 20]);
+        if (!empty($user_ids)) {
+            $queryConfCommunity->andWhere(['user_profile.user_id' => $user_ids]);
+            $query->andWhere(['user_profile.user_id' => $user_ids]);
+        }
+
+
+        $union = $query->union($queryConfCommunity);
+
+        $moduleUtility = \Yii::$app->getModule('utility');
+        if ($moduleUtility && class_exists('open20\amos\utility\models\PlatformConfigs')) {
+            $config = \open20\amos\utility\models\PlatformConfigs::getConfigValue('notify', 'send_email_summary_to');
+            if ($config) {
+                if (!empty($config->value)) {
+                    $ids = explode(',', $config->value);
+                    $query->andWhere(['user_profile.user_id' => $ids]);
+                    $queryConfCommunity->andWhere(['user_profile.user_id' => $ids]);
                 }
             }
+        }
+//   $query->andWhere(['user_profile.user_id' => [1,4,5]]);
 
-            $union = $query->union($queryConfCommunity);
-
-            $moduleUtility = \Yii::$app->getModule('utility');
-            if ($moduleUtility && class_exists('open20\amos\utility\models\PlatformConfigs')) {
-                $config = \open20\amos\utility\models\PlatformConfigs::getConfigValue('notify', 'send_email_summary_to');
-                if ($config) {
-                    if (!empty($config->value)) {
-                        $ids = explode(',', $config->value);
-                        $query->andWhere(['user_profile.user_id' => $ids]);
-                        $queryConfCommunity->andWhere(['user_profile.user_id' => $ids]);
-                    }
-                }
-            }
-//                        $query->andWhere(['user_profile.user_id' => [1,4,5]]);
+        $queryTotal = new Query();
+        $queryTotal->select('*')->from(['u' => $union])->orderBy(['user_id' => SORT_ASC]);
+//        Console::stdout($queryTotal->createCommand()->rawSql.PHP_EOL);
+        $result = $queryTotal->all();
 
 //            Console::stdout('offset ->'. $offset.' limit ->'.$limit.PHP_EOL);
+//            foreach($result as $a){
+//                Console::stdout($a->id .PHP_EOL);
+//                pr($a->attributes);
+//            }
 
-
-            if ($onlyMaxId == true) {
-                $cloned = clone $union;
-                $queryUnion = new Query();
-                $queryUnion->select(new \yii\db\Expression("max(user_id) as counter"))
-                    ->from($cloned);
-//                Console::stdout('####### COUNT #####'. $queryUnion->one()['counter'].PHP_EOL);
-                return $queryUnion->one()['counter'];
-            }
-            $result = $query->all();
-        } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+        if ($onlyMaxId == true) {
+            $cloned = clone $union;
+            $queryUnion = new Query();
+            $queryUnion->select(new \yii\db\Expression("max(user_id) as counter"))
+                ->from($cloned);
+//            Console::stdout('####### COUNT #####' . $queryUnion->one()['counter'] . PHP_EOL);
+            return $queryUnion->one()['counter'];
         }
+
+//        } catch (Exception $ex) {
+//            Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+//        }
 
         return $result;
     }
@@ -420,7 +455,7 @@ class NotifierController extends Controller
      * @param null $channel
      * @throws \yii\base\InvalidConfigException
      */
-    public function notifyUserCached($cwhModule, $users, $builder, $type = null, $language = null, $offset = 0, $channel = null)
+    public function notifyUserCached($cwhModule, $users, $builder, $type = null, $language = null, $offset = 0, $channel = null, $simulate = false)
     {
         $type = NotificationsConfOpt::EMAIL_DAY;
 
@@ -445,16 +480,24 @@ class NotifierController extends Controller
         $resComments = $queryComments->asArray()->all();
 
         //CREATE NOTIFICATION SCHEDULE IF IS FIRST EXECUTION
-        if (empty($notificationSchedule)) {
+        if (!$simulate && empty($notificationSchedule)) {
             $maxUserIdToSend = $this->getMaxUserIdToSend($type);
-            $notificationSchedule = NotificationSchedule::createSchedule($res, $resComments, $type, $maxUserIdToSend);
+            $segmentationInfos = $this->getSegmentation($type);
+            $notificationSchedule = NotificationSchedule::createSchedule($res, $resComments, $type, $maxUserIdToSend, $segmentationInfos);
+            if (count($res) == 0) {
+                $notificationSchedule->status = NotificationSchedule::STATUS_DONE;
+                $notificationSchedule->ended_at = date('Y-m-d H:i:s');
+                $notificationSchedule->save(false);
+                self::$exitSegmentation = 1;
+//                Console::stdout('OUT'.PHP_EOL);
+            }
         }
 
         //RENDER ALL CONTENTS AND SAVE THE HTML IN CACHE
-        $this->renderContentsMemoized($res, $resComments, $orderClassnameSections, $notifyModule);
+        $this->renderContentsMemoized($res, $resComments, $orderClassnameSections, $notifyModule, $simulate, $notificationSchedule);
 
         //FIND CONTENTS MATCHING WITH USER -> COMPOSE EMAIL AND SEND
-        $this->matchContentUser($users, $type, $cwhModule, $builder, $language, $offset, $notificationSchedule);
+        $this->matchContentUser($users, $type, $cwhModule, $builder, $language, $offset, $notificationSchedule, $simulate);
 //        Console::stdout(VarDumper::dumpAsString($res, 3, false) . "\n");
     }
 
@@ -467,7 +510,6 @@ class NotifierController extends Controller
     {
         return $this->loadUser($type, null, 0, 0, true);
     }
-
 
 
     /**
@@ -506,6 +548,7 @@ class NotifierController extends Controller
 
 
             // GET ALL NEW CONTENTS TO NOTIFY
+            // prendo tutte le notifiche che non sono state inserite in un uno schedule
             $query = $notificationModel::find()
                 ->leftJoin($notificationReadTable,
                     [
@@ -514,6 +557,12 @@ class NotifierController extends Controller
                     ])
                 ->andWhere([$notificationTable . '.channels' => $channelInternal])
                 ->andWhere([$notificationReadTable . '.user_id' => null]);
+
+            //tolgo i contenuti già notificati e presenti in uno schedule
+            $query
+                ->leftJoin('notification_schedule_content', 'notification.id = notification_schedule_content.notification_id')
+                ->leftJoin('notification_schedule', 'notification_schedule.id = notification_schedule_content.notification_schedule_id')
+                ->andWhere(['notification_schedule.type' => null]);
 
             // DATA MINIMA PARTENZA NOTIFICHE
             if (isset($this->notifyModule->batchFromDate)) {
@@ -544,8 +593,10 @@ class NotifierController extends Controller
                     $query->orderBy('class_name');
                 }
             }
+//                    Console::stdout($query->createCommand()->rawSql . PHP_EOL);
+//                    Console::stdout('--------------------'. PHP_EOL);
+
         }
-//        Console::stdout($query->createCommand()->rawSql . PHP_EOL);
 
         return $query;
     }
@@ -573,10 +624,10 @@ class NotifierController extends Controller
      * @param $orderClassnameSections
      * @throws \yii\base\InvalidConfigException
      */
-    public function renderContentsMemoized($res, $resComments, $orderClassnameSections, $notifyModule)
+    public function renderContentsMemoized($res, $resComments, $orderClassnameSections, $notifyModule, $simulate, $schedule = null)
     {
         $langs = ['it-IT', 'en-GB'];
-
+        $now = new \DateTime();
         $modelClassnameCommunityId = null;
         $modelClassnameCommunity = ModelsClassname::find()->andWhere(['table' => 'community'])->one();
         if ($modelClassnameCommunity) {
@@ -585,7 +636,7 @@ class NotifierController extends Controller
 
         //CICLO LE LINGUE DISPONIBILI
         foreach ($langs as $lang) {
-            Console::stdout('=======>LINGUA ' . $lang . PHP_EOL);
+            NotifyUtility::printConsole('=======>LINGUA ' . $lang . PHP_EOL);
             \Yii::$app->language = $lang;
 
             // RENDER TITOLI SEZIONI
@@ -602,7 +653,7 @@ class NotifierController extends Controller
                 $modelComment = $comment_classname::find()->andWhere(['id' => $comment_content_id])->one();
                 if ($modelComment) {
                     $renderedComments[$modelComment->context][$modelComment->context_id][] = \Yii::$app->controller->renderPartial("@vendor/open20/amos-" . AmosNotify::getModuleName() . "/src/views/email/_content_comment_cached", ['comment' => $modelComment]);
-                    Console::stdout('Comment ' . "$modelComment->context - $modelComment->context_id" . PHP_EOL);
+                    NotifyUtility::printConsole('Comment ' . "$modelComment->context - $modelComment->context_id" . PHP_EOL);
                 }
             }
 
@@ -615,6 +666,20 @@ class NotifierController extends Controller
                 if (!empty($classname) && class_exists($classname)) {
                     $modelContent = $classname::find()->andWhere(['id' => $content_id])->one();
                     if ($modelContent) {
+
+                        //segno da non notificare se non è arrivata la data di pubblicazione
+                        if (!$simulate) {
+                            if (!empty($schedule) && method_exists($modelContent, 'getPublicatedFrom')) {
+                                $publicatedFrom = $modelContent->getPublicatedFrom();
+                                if (!empty($publicatedFrom)) {
+                                    $datePubblicazioneStart = new \DateTime($publicatedFrom);
+                                    if ($datePubblicazioneStart > $now) {
+                                        NotificationScheduleContent::deleteAll(['notification_id' => $notification['id'], 'notification_schedule_id' => $schedule->id]);
+                                    }
+                                }
+                            }
+                        }
+
                         $modelClassname = ModelsClassname::find()->andWhere(['classname' => $classname])->asArray()->one();
                         if ($modelClassname) {
                             // -------- DEFAULT VIEW PATH ------
@@ -675,11 +740,10 @@ class NotifierController extends Controller
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\db\Exception
      */
-    public function matchContentUser($users, $type, $moduleCwh, $builder, $language, $offset, $notificationSchedule)
+    public function matchContentUser($users, $type, $moduleCwh, $builder, $language, $offset, $notificationSchedule, $simulate = false)
     {
-        $useSegmentation = ($this->notifyModule->enableSegmentedSend && in_array($type,
-                $this->notifyModule->segmentationEnabledFor) && $offset > 0);
-//        try {
+        $useSegmentation = ($this->notifyModule->enableSegmentedSend && in_array($type, $this->notifyModule->segmentationEnabledFor) && $offset > 0);
+        // try {
         if ($moduleCwh) {
             $contentToNotNotify = $this->notifyModule->contentToNotNotify;
             $modelsEnabled = \open20\amos\cwh\models\CwhConfigContents::find()
@@ -697,7 +761,7 @@ class NotifierController extends Controller
         $connection = \Yii::$app->db;
         $typeOFnotification = [self::TYPE_OF_SECTION_ALL];
 
-        foreach ($users as $user) {
+        foreach ((array)$users as $user) {
             $results = null;
             $query = null;
 
@@ -705,7 +769,7 @@ class NotifierController extends Controller
             $uid = $user['user_id'];
 
             $startUser = NotifyUtility::debugDurationMicrotime('debug_notify_elastic.txt', "USER $uid - ");
-            Console::stdout('Start working on user ' . $uid . PHP_EOL);
+            NotifyUtility::printConsole('Start working on user ' . $uid . PHP_EOL);
 
             /** @var NotificationConf $notificationConfModel */
             $notificationConfModel = $this->notifyModule->createModel('NotificationConf');
@@ -738,7 +802,7 @@ class NotifierController extends Controller
                         if (!empty($networkConfArray)) {
                             foreach ($networkConfArray as $classname_id => $record_id) {
 
-                                if (!empty($classname_id) && !empty($record_id)) {
+                                if (!empty($classname_id) && !empty($record_id) && is_numeric($record_id)) {
                                     $query->andWhere(['or',
                                         [
                                             'AND',
@@ -771,7 +835,7 @@ class NotifierController extends Controller
                             $andWhere = "";
                             $i = 0;
                             foreach ($modelsEnabled as $classname) {
-                                //Console::stdout('enabled '.$classname.PHP_EOL);
+                                //NotifyUtility::printConsole('enabled '.$classname.PHP_EOL);
 
                                 $cwhActiveQuery = new \open20\amos\cwh\query\CwhActiveQuery($classname,
                                     [
@@ -839,9 +903,13 @@ class NotifierController extends Controller
                                 }
 
 //                                        if ($typeOfNotify == self::TYPE_OF_SECTION_NORMAL && $classname == 'open20\\amos\\een\\models\\EenPartnershipProposal') {
-//                                            Console::stdout($queryModel->createCommand()->rawSql . PHP_EOL);
-//                                            Console::stdout('' . PHP_EOL);
+//                                            NotifyUtility::printConsole($queryModel->createCommand()->rawSql . PHP_EOL);
+//                                            NotifyUtility::printConsole('' . PHP_EOL);
 //                                        }
+
+                                if ($simulate) {
+                                    $this->debugSqlNotifications[$uid]['models'][$classname] = $queryModel->createCommand()->rawSql;
+                                }
 
                                 $modelIds = $queryModel->select($classname::tableName() . '.id')->column();
                                 if (!empty($modelIds)) {
@@ -868,13 +936,13 @@ class NotifierController extends Controller
                                 $query->andWhere($andWhere);
                             } else {
                                 if (empty($resultsCustom)) {
-                                    Console::stdout('End working on user without interest ' . $uid . PHP_EOL);
+                                    NotifyUtility::printConsole('End working on user without interest ' . $uid . PHP_EOL);
                                     $transaction->commit();
                                     continue 2;
                                 }
                             }
 
-//                          Console::stdout($query->createCommand()->rawSql . "\n");
+//                          NotifyUtility::printConsole($query->createCommand()->rawSql . "\n");
                             //get notifications
                             $results[$typeOfNotify] = $query->all();
                             if (!empty($resultsCustom[$typeOfNotify]) && $typeOfNotify == self::TYPE_OF_SECTION_ALL) {
@@ -885,6 +953,9 @@ class NotifierController extends Controller
                             $results[self::TYPE_OF_SECTION_COMMENTS] = $this->getNotifications($type,
                                 self::TYPE_OF_SECTION_COMMENTS, $user)->all();
 
+                            if ($simulate) {
+                                $this->debugSqlNotifications[$uid]['generic'] = $query->createCommand()->rawSql;
+                            }
                         }
                     }
                 }
@@ -892,30 +963,38 @@ class NotifierController extends Controller
 
 
             if (!empty($results) && (!empty($results['all']))) {
-//                Console::stdout(VarDumper::dumpAsString($results, 3, false) . "\n");
+//                NotifyUtility::printConsole(VarDumper::dumpAsString($results, 3, false) . "\n");
                 // COMPOSE EMAIL AND SEND
                 $builder->sendEmailMultipleSectionsCached($uid, $results['all']);
                 // set notification as read
                 foreach ($results['all'] as $notify) {
                     /** @var Notification $notify */
-                    $this->notifyReadFlag($notify->id, $uid, $type);
+                    if (!$simulate) {
+                        $this->notifyReadFlag($notify->id, $uid, $type);
+                    }
                 }
                 // set comment notifications as read
                 $c = 0;
                 foreach ($results[self::TYPE_OF_SECTION_COMMENTS] as $notifyComment) {
                     $c++;
-                    $this->notifyReadFlag($notifyComment->id, $uid, $type);
+                    if (!$simulate) {
+                        $this->notifyReadFlag($notifyComment->id, $uid, $type);
+                    }
                 }
-                Console::stdout('comments:' . $c . PHP_EOL);
+                NotifyUtility::printConsole('comments:' . $c . PHP_EOL);
             }
 
             // setto a che punto sono arrivato con l'invio
-            $notificationSchedule->last_notified_user_id = $uid;
-            if($notificationSchedule->isLastUserToSend($uid)){
-                $notificationSchedule->status = NotificationSchedule::STATUS_DONE;
-                $notificationSchedule->ended_at = date('Y-m-d H:i:s');
+            if (!$simulate) {
+                $notificationSchedule->last_notified_user_id = $uid;
+                if ($notificationSchedule->isLastUserToSend($uid)) {
+                    $notificationSchedule->status = NotificationSchedule::STATUS_DONE;
+                    $notificationSchedule->ended_at = date('Y-m-d H:i:s');
+                    self::$exitSegmentation = 1;
+                }
+                $notificationSchedule->save(false);
             }
-            $notificationSchedule->save(false);
+
 
             unset($query);
             unset($queryModel);
@@ -924,26 +1003,26 @@ class NotifierController extends Controller
             $transaction = null;
             gc_collect_cycles();
 
-            NotifyUtility::debugDurationMicrotime('debug_notify_elastic.txt', 'USER', 'end', $startUser);
-            Console::stdout('End working on user ' . $uid . PHP_EOL);
-            Console::stdout('----------- ' . PHP_EOL);
+//            NotifyUtility::debugDurationMicrotime('debug_notify_elastic.txt', 'USER', 'end', $startUser);
+            NotifyUtility::printConsole('End working on user ' . $uid . PHP_EOL);
+            NotifyUtility::printConsole('----------- ' . PHP_EOL);
         }
 
         if ($useSegmentation) {
-            Console::stdout('---- OFFSET CRON ' . $offset . PHP_EOL);
+            NotifyUtility::printConsole('---- OFFSET CRON ' . $offset . PHP_EOL);
             $this->setSegmentationOffset($type, $offset);
         }
-//        } catch (\Exception $e) {
-//            if (!is_null($transaction)) {
-//                $transaction->rollBack();
-//            }
-//            throw $e;
-//        } catch (\Throwable $e) {
-//            if (!is_null($transaction)) {
-//                $transaction->rollBack();
-//            }
-//            throw $e;
-//        }
+        /* } catch (\Exception $e) {
+             if (!is_null($transaction)) {
+                 $transaction->rollBack();
+             }
+             throw $e;
+         } catch (\Throwable $e) {
+             if (!is_null($transaction)) {
+                 $transaction->rollBack();
+             }
+             throw $e;
+         }*/
     }
 
 
@@ -970,6 +1049,7 @@ class NotifierController extends Controller
             $contentToNotNotify = $this->notifyModule->contentToNotNotify;
             $results = [];
             $resultsCustom = [];
+            $communityNameInSenderEmail = '';
 
             /** @var Notification $notificationModel */
             $notificationModel = $this->notifyModule->createModel('Notification');
@@ -1024,18 +1104,18 @@ class NotifierController extends Controller
                                 // Get the netowrks to not notify
                                 $notificationNetworkConfDontNotify = NotifyUtility::getNetworkNotificationConf($uid,
                                     $type);
-								
-									
+
+
                                 $networkConfArray = [];
                                 foreach ($notificationNetworkConfDontNotify as $networkConf) {
-                                   // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
-								    $networkConfArray[] = $networkConf;
+                                    // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
+                                    $networkConfArray[] = $networkConf;
                                 }
-									
-								
-                                $networkConfArray = $this->setOtherExclusions($networkConfArray, $uid);
-								
-								
+
+
+                                $networkConfArray = $this->setOtherExclusions($networkConfArray, $uid, true);
+
+
                                 if (!empty($networkConfArray)) {
                                     foreach ($networkConfArray as $na) {
 
@@ -1190,9 +1270,14 @@ class NotifierController extends Controller
                             Console::stdout(self::TYPE_OF_SECTION_COMMENTS . ': ' . count($results[self::TYPE_OF_SECTION_COMMENTS]) . PHP_EOL);
 
 
-                            if (!empty($results) && (!empty($results['normal']) || !empty($results['network']))) {
+                            if (!empty($results) && (!empty($results[self::TYPE_OF_SECTION_NORMAL]) || !empty($results[self::TYPE_OF_SECTION_NETWORK]))) {
+                                if ($this->notifyModule->enableCommunityNameInSenderEmail) {
+                                    if ($type == NotificationsConfOpt::EMAIL_IMMEDIATE && empty($results[self::TYPE_OF_SECTION_NORMAL]) && !empty($results[self::TYPE_OF_SECTION_NETWORK])) {
+                                        $communityNameInSenderEmail = $this->getCommunityNameInSenderEmail($results[self::TYPE_OF_SECTION_NETWORK]);
+                                    }
+                                }
                                 $builder->sendEmailMultipleSections([$uid], $results['normal'], $results['network'],
-                                    $results['comments']);
+                                    $results['comments'], $communityNameInSenderEmail);
                                 Console::stdout('Contents notified: ' . (count($results['normal']) + count($results['network'])) . PHP_EOL);
                                 foreach ($results as $result) {
                                     /** @var Notification $notify */
@@ -1234,7 +1319,7 @@ class NotifierController extends Controller
         }
     }
 
-    protected function setOtherExclusions($networkConfArray, $user_id)
+    protected function setOtherExclusions($networkConfArray, $user_id, $returnModel = false)
     {
         try {
             $moduleCommunity = \Yii::$app->getModule('community');
@@ -1249,12 +1334,16 @@ class NotifierController extends Controller
                         ->all();
                     if (!empty($search)) {
                         foreach ($search as $communityUserMm) {
-                          //  $networkConfArray[$classnameId->id] = $communityUserMm->community_id;
-						  // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
-						  $notify =  AmosNotify::instance()->createModel('NotificationconfNetwork');
-						  $notify->models_classname_id = $classnameId->id;
-						  $notify->record_id = $communityUserMm->community_id;
-						  $networkConfArray[] = $notify;
+                            //  $networkConfArray[$classnameId->id] = $communityUserMm->community_id;
+                            // $networkConfArray[$networkConf->models_classname_id] = $networkConf->record_id;
+                            $notify = AmosNotify::instance()->createModel('NotificationconfNetwork');
+                            $notify->models_classname_id = $classnameId->id;
+                            $notify->record_id = $communityUserMm->community_id;
+                            if ($returnModel) {
+                                $networkConfArray[] = $notify;
+                            } else {
+                                $networkConfArray[$notify->models_classname_id] = $notify->record_id;
+                            }
                         }
                     }
                 }
@@ -1890,7 +1979,10 @@ class NotifierController extends Controller
                     file_put_contents($file, 0);
                 }
                 $offset = file_get_contents($file);
-                $limit = $this->notifyModule->segmentationOffset + $offset;
+                if(empty($offset)) {
+                    $offset = 0;
+                }
+                $limit = $this->notifyModule->segmentationOffset + (int) $offset;
             }
         }
         return ['offset' => $offset, 'limit' => $limit];
@@ -1918,6 +2010,11 @@ class NotifierController extends Controller
      */
     protected function getReturnSegmentation($users, $type, $limit)
     {
+        if (self::$exitSegmentation) {
+            $path = $this->getSegmentationLogPath($type);
+            file_put_contents($path, 0);
+            return 1;
+        }
         if (empty(self::$countUsers[$type])) {
             self::$countUsers[$type] = $this->loadUser($type, null, 0, 0, true);
         }
@@ -1930,6 +2027,47 @@ class NotifierController extends Controller
             return 1;
         }
         return 0;
+    }
+
+    /**
+     * Get single community name if $resultsNetwork contains only one community notification.
+     * @param $resultsNetwork
+     * @return string|null
+     */
+    protected function getCommunityNameInSenderEmail($resultsNetwork)
+    {
+        $notifications = $resultsNetwork;
+        /** @var \open20\amos\community\AmosCommunity $communityModule */
+        $communityModule = \Yii::$app->getModule('community');
+        if ($communityModule) {
+            $communityModelsClassname = ModelsClassname::findOne([
+                'module' => $communityModule::getModuleName(),
+                'table' => 'community',
+            ]);
+            if ($communityModelsClassname) {
+                $modelsClassnameIds = [];
+                $recordIds = [];
+                /** @var Notification $notification */
+                foreach ($notifications as $notification) {
+                    $modelsClassnameIds[] = $notification->models_classname_id;
+                    $recordIds[] = $notification->record_id;
+                }
+                if (!empty($modelsClassnameIds) && !empty($recordIds)) {
+                    $uniqueModelsClassnameIds = array_unique($modelsClassnameIds);
+                    $uniqueRecordIds = array_unique($recordIds);
+                    if (count($uniqueModelsClassnameIds) == 1
+                        && $uniqueModelsClassnameIds[0] == $communityModelsClassname->id
+                        && count($uniqueRecordIds) == 1) {
+                        $communityId = $uniqueRecordIds[0];
+                        $community = Community::findOne($communityId);
+                        if ($community && $community->name) {
+                            return $community->name;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }

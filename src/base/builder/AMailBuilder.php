@@ -17,6 +17,7 @@ use open20\amos\notificationmanager\AmosNotify;
 use open20\amos\emailmanager\AmosEmail;
 use open20\amos\notificationmanager\base\Builder;
 use open20\amos\notificationmanager\models\NotificationConf;
+use open20\amos\notificationmanager\utility\NotifyUtility;
 use Yii;
 use yii\base\BaseObject;
 use yii\helpers\Console;
@@ -153,11 +154,14 @@ abstract class AMailBuilder extends BaseObject implements Builder
      * @param array $resultset
      * @param array $resultsetNetwork
      * @param array $resultsetComments
+     * @param string $communityNameInSenderEmail
      * @return bool
      */
-    public function sendEmailMultipleSections($userIds, $resultset, $resultsetNetwork, $resultsetComments)
+        public function sendEmailMultipleSections($userIds, $resultset, $resultsetNetwork, $resultsetComments, $communityNameInSenderEmail = '')
     {
         $allOk = true;
+        /** @var AmosNotify $notifyModule */
+        $notifyModule = AmosNotify::instance();
 
         try {
             foreach ($userIds as $id) {
@@ -176,6 +180,9 @@ abstract class AMailBuilder extends BaseObject implements Builder
                     if (isset(Yii::$app->params['email-assistenza'])) {
                         // Use default platform email assistance
                         $from = Yii::$app->params['email-assistenza'];
+                        if ($notifyModule->enableCommunityNameInSenderEmail && !empty($communityNameInSenderEmail)) {
+                            $from = NotifyUtility::getFromEmailWithCommunityName($from, $communityNameInSenderEmail);
+                        }
                     }
 
                     $ok = $email->sendMail($from, [$user->email], $subject, $message);
