@@ -1,5 +1,6 @@
 {
   "name": "open20/amos-notify",
+  "license": "GPL-3.0-or-later",
   "description": "Modulo di gestione notifiche - plugin",
   "keywords": [
     "amos",
